@@ -1,15 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@500&display=swap');
 *{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 body{
-    background: #f1f1f1;
     user-select: none;
+    background: url(/assets/imgs/bg.png) no-repeat center center;
+    background-size: cover;
+    font-family: 'Golos Text', sans-serif;
     overflow: hidden;
-    height: 100vh;
-    background: #43a4e4a7;
-    width: 100%;
 }
 img{
     -webkit-user-drag: none;
@@ -19,7 +19,7 @@ img{
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: #fff;
+    background: #5988a69c;
     opacity: 0.5;
 }
 #population{
@@ -37,11 +37,26 @@ img{
     align-items: center;
 
 }
-.role
-{
+.aquarium{
+    height: 100vh;
+}
+.role-container{
     position: absolute;
-    top: -20px;
-    left: 10px;
-    transform: rotate(-90deg);
-    white-space: nowrap;
+    top: -10px;
+    width: 120px;
+    height: 60px;
+    border-radius: 5px;
+    display: flex;
+    gap: 5px;
+    padding: 5px 10px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #0000009c;
+    z-index: 100;
+}
+.role-item{
+    font-size: 12px;
+    text-transform: capitalize;
+    color: aliceblue;
 }
