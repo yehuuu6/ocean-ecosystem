@@ -1,2 +1,13 @@
-# ocean-eco-system
-An eco system on browser created with javascript
+# Ocean Eco System
+
+> I am trying to create an eco system on web. Mostly inspired by Sebastian Lague's Unity version.
+
+- [Simulating an Ecosystem](https://youtu.be/r_It_X7v-1E) - Inspired by this vide.
+
+![Thumbnail](assets/thumb.PNG)
+
+## License
+
+MIT License.
+
+Check out [LICENSE](./LICENSE) for more detail.
