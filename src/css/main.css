@@ -1,0 +1,47 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    background: #f1f1f1;
+    user-select: none;
+    overflow: hidden;
+    height: 100vh;
+    background: #43a4e4a7;
+    width: 100%;
+}
+img{
+    -webkit-user-drag: none;
+}
+.bubble{
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0.5;
+}
+#population{
+    margin-top: 20px;
+    text-align: center;
+    font-family: 'Gill Sans', 'Gill Sans MT', 'Trebuchet MS', sans-serif;
+    color: aliceblue;
+}
+.container{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+.role
+{
+    position: absolute;
+    top: -20px;
+    left: 10px;
+    transform: rotate(-90deg);
+    white-space: nowrap;
+}

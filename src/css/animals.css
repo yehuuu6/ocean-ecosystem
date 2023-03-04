@@ -1,0 +1,15 @@
+.fish {
+    position: absolute;
+}
+.small {
+    width: 60px;
+    height: 60px;
+}
+.medium {
+    width: 100px;
+    height: 100px;
+}
+.large {
+    width: 200px;
+    height: 200px;
+}
