@@ -34,7 +34,11 @@ class Fish {
         this.lifeTime = 30;
         break;
     }
-
+    if (this.age != "baby") {
+      this.canMate = true;
+    } else {
+      this.canMate = false;
+    }
     this.lifeSpan = 30 + Math.random() * 40;
     setInterval(() => {
       this.lifeTime++;
@@ -71,8 +75,12 @@ class Fish {
 
     // Create img element for the fish
     this.img = document.createElement("img");
-    this.img.classList.add(size);
     this.img.src = "./assets/svg/animals/" + this.svg;
+    if (this.age != "baby") {
+      this.img.className = this.size;
+    } else {
+      this.img.className = "baby";
+    }
     // add shadow to the fish
     this.img.style.filter = "drop-shadow(0px 0px 1px #000000)";
     this.element.appendChild(this.img);
@@ -120,11 +128,17 @@ class Fish {
     } else if (this.lifeTime >= 30) {
       this.age = "elder";
       this.fishGender.innerText = this.gender + " " + this.age;
+      this.canMate = true;
+      this.img.className = this.size;
     } else if (this.lifeTime >= 15) {
       this.age = "adult";
       this.fishGender.innerText = this.gender + " " + this.age;
+      this.img.className = this.size;
+      this.canMate = true;
     } else if (this.lifeTime >= 0) {
       this.age = "baby";
+      this.img.className = "baby";
+      this.canMate = false;
       this.fishGender.innerText = this.gender + " " + this.age;
     }
   }
@@ -145,6 +159,11 @@ class Fish {
     deadFish.style.transform = `translate(${fish.x}px, ${fish.y}px) rotate(${fish.angle}deg)`;
     aquarium.appendChild(deadFish);
     fish.element.remove();
+    if (fish.role === "predator") {
+      predators.splice(predators.indexOf(fish), 1);
+    } else if (fish.role === "prey") {
+      preys.splice(preys.indexOf(fish), 1);
+    }
     fish.roleContainer.remove();
     livingThings.splice(livingThings.indexOf(fish), 1);
   }
@@ -166,17 +185,19 @@ class Fish {
       if (
         closestFish &&
         closestFish.role === "prey" &&
-        this.power > closestFish.power
+        this.power >= closestFish.power &&
+        this.svg != closestFish.svg &&
+        !this.isExhausted &&
+        this.state != "Hunting" &&
+        this.age != "baby"
       ) {
         const distance = Math.sqrt(
           Math.pow(this.x - closestFish.x, 2) +
             Math.pow(this.y - closestFish.y, 2)
         );
         if (distance < 300) {
-          if (!this.isExhausted) {
-            this.state = "Hunting";
-            this.fishState.innerText = this.state;
-          }
+          this.state = "Hunting";
+          this.fishState.innerText = this.state;
           this.angle = Math.atan2(
             closestFish.y - this.y,
             closestFish.x - this.x
@@ -191,39 +212,36 @@ class Fish {
       }
     }
     // If prey is close to a predator, start running away
-    if (this.role === "prey") {
-      const closestFish = this.getClosestFish();
-      if (
-        closestFish &&
-        closestFish.role === "predator" &&
-        this.power < closestFish.power
-      ) {
-        const distance = Math.sqrt(
-          Math.pow(this.x - closestFish.x, 2) +
-            Math.pow(this.y - closestFish.y, 2)
-        );
-        if (distance < 250) {
-          if (!this.isExhausted) {
-            this.state = "Escaping";
-            this.fishState.innerText = this.state;
-          }
-
-          this.angle = Math.atan2(
-            this.y - closestFish.y,
-            this.x - closestFish.x
-          );
-          this.angle = (this.angle * 180) / Math.PI;
-        } else {
-          this.state = "Wandering";
+    const closestFish = this.getClosestFish();
+    if (
+      closestFish &&
+      closestFish.role === "predator" &&
+      this.power <= closestFish.power &&
+      this.svg != closestFish.svg &&
+      closestFish.age != "baby"
+    ) {
+      const distance = Math.sqrt(
+        Math.pow(this.x - closestFish.x, 2) +
+          Math.pow(this.y - closestFish.y, 2)
+      );
+      if (distance < 250) {
+        if (!this.isExhausted) {
+          this.state = "Escaping";
           this.fishState.innerText = this.state;
         }
+
+        this.angle = Math.atan2(this.y - closestFish.y, this.x - closestFish.x);
+        this.angle = (this.angle * 180) / Math.PI;
+      } else {
+        this.state = "Wandering";
+        this.fishState.innerText = this.state;
       }
     }
 
     // If predator and prey are close, eat prey
-    if (this.role === "predator") {
+    if (this.role === "predator" && this.state === "Hunting") {
       const closestFish = this.getClosestFish();
-      if (closestFish) {
+      if (closestFish && closestFish.svg != this.svg) {
         const distance = Math.sqrt(
           Math.pow(this.x - closestFish.x, 2) +
             Math.pow(this.y - closestFish.y, 2)
@@ -316,57 +334,200 @@ class Fish {
     }
   }
 
-  // If female, spawn a new fish every 10 seconds if not escaping or hunting
-  spawn() {
-    if (this.gender === "female" && this.state != "Escaping") {
-      this.state = "Pregnant";
-      this.fishState.innerText = this.state;
-      setTimeout(() => {
-        const _newfish = new Fish(
-          "marine",
-          this.svg,
-          this.role,
-          this.gender,
-          "baby",
-          15,
-          "baby"
+  // Look for mate
+  mate() {
+    // Set state to looking for mate if wandering more than 5 seconds
+    setTimeout(() => {
+      if (this.state === "Wandering" && this.age != "baby" && this.canMate) {
+        this.state = "Looking for mate";
+        this.fishState.innerText = this.state;
+        this.canMate = true;
+      }
+    }, 5000);
+    // Set state to wandering if looking for mate more than 35 seconds
+    setTimeout(() => {
+      if (this.state === "Looking for mate" && this.canMate) {
+        this.state = "Wandering";
+        this.fishState.innerText = this.state;
+        this.canMate = true;
+      }
+    }, 35000);
+    if (this.canMate) {
+      const closestFish = this.getClosestFish();
+      if (
+        closestFish &&
+        closestFish.svg == this.svg &&
+        this.state == "Looking for mate" &&
+        this.gender != closestFish.gender &&
+        this.canMate &&
+        closestFish.canMate &&
+        closestFish.state == "Looking for mate" &&
+        closestFish.age != "baby" &&
+        this.age != "baby"
+      ) {
+        const distance = Math.sqrt(
+          Math.pow(this.x - closestFish.x, 2) +
+            Math.pow(this.y - closestFish.y, 2)
         );
-        livingThings.push(_newfish);
-        const baby = document.createElement("div");
-        baby.className = "fish";
-        const babyImg = document.createElement("img");
-        babyImg.src = `./assets/svg/animals/${this.svg}`;
-        babyImg.className = "baby";
-        baby.appendChild(babyImg);
-        aquarium.appendChild(baby);
-      }, 10000);
+        if (distance < 500) {
+          this.state = "Looking for mate";
+          this.fishState.innerText = this.state;
+          this.angle = Math.atan2(
+            closestFish.y - this.y,
+            closestFish.x - this.x
+          );
+          this.angle = (this.angle * 180) / Math.PI;
+        }
+      }
     }
+    if (
+      this.state === "Looking for mate" &&
+      this.canMate &&
+      this.age != "baby"
+    ) {
+      const closestFish = this.getClosestFish();
+      if (closestFish && this.canMate) {
+        const distance = Math.sqrt(
+          Math.pow(this.x - closestFish.x, 2) +
+            Math.pow(this.y - closestFish.y, 2)
+        );
+        if (distance < 35 && closestFish.age != "baby") {
+          // Stop fish from moving for 5 seconds and change state to mating
+          this.setSpeed(0, true);
+          this.state = "Mating";
+          this.fishState.innerText = this.state;
+          this.canMate = false;
+          // if female change state to pregnant else change state to wandering
+          if (this.gender == "female") {
+            setTimeout(() => {
+              this.state = "Pregnant";
+              this.setSpeed(this.speed - 15, true);
+              this.fishState.innerText = this.state;
+              this.canMate = false;
+              this.resetSpeed();
+              const random = Math.random();
+
+              let _gender;
+              setTimeout(() => {
+                console.log(random);
+                if (random < 0.5) {
+                  _gender = "female";
+                } else {
+                  _gender = "male";
+                }
+                const _newfish = new Fish(
+                  "marine",
+                  this.svg,
+                  this.role,
+                  _gender,
+                  this.size,
+                  15,
+                  "baby"
+                );
+                if (this.role === "predator") {
+                  predators.push(_newfish);
+                } else {
+                  preys.push(_newfish);
+                }
+                // Put newborn near parent
+                _newfish.x = this.x + 10;
+                _newfish.y = this.y + 10;
+                livingThings.push(_newfish);
+
+                this.state = "Wandering";
+                this.canMate = false;
+                this.fishState.innerText = this.state;
+                this.resetSpeed();
+                // After 10 secs can mate again
+                setTimeout(() => {
+                  this.canMate = true;
+                }, 10000);
+              }, 10000);
+            }, 5000);
+          } else {
+            this.state = "Wandering";
+            this.fishState.innerText = this.state;
+            this.canMate = true;
+            this.resetSpeed();
+          }
+        }
+      }
+    }
+  }
+
+  live() {
+    this.update();
+    this.turn();
+    this.fishController();
+    this.mate();
   }
 }
 const createAnimal = (habit, svg, role, gender, size, speed, age) => {
   const fish = new Fish(habit, svg, role, gender, size, speed, age);
   livingThings.push(fish);
 };
-createAnimal("marine", "clown.svg", "prey", "male", "small", 20, "baby");
-createAnimal("marine", "dorito.svg", "prey", "female", "small", 25, "baby");
+createAnimal("marine", "clown.svg", "prey", "male", "small", 20, "adult");
+createAnimal("marine", "clown.svg", "prey", "female", "small", 20, "elder");
+createAnimal("marine", "dorito.svg", "prey", "female", "small", 25, "adult");
+createAnimal("marine", "dorito.svg", "prey", "male", "small", 25, "adult");
 createAnimal("marine", "stylish.svg", "prey", "male", "small", 22, "adult");
+createAnimal("marine", "stylish.svg", "prey", "female", "small", 22, "elder");
 createAnimal("marine", "classic.svg", "prey", "male", "small", 21, "adult");
 createAnimal("marine", "ballon.svg", "prey", "male", "small", 26, "elder");
 createAnimal("marine", "dolphin.svg", "prey", "male", "medium", 18, "elder");
-createAnimal("marine", "shark.svg", "predator", "male", "baby", 28, "baby");
+createAnimal("marine", "shark.svg", "predator", "male", "large", 28, "baby");
+createAnimal("marine", "piranha.svg", "predator", "male", "small", 30, "baby");
+createAnimal(
+  "marine",
+  "piranha.svg",
+  "predator",
+  "female",
+  "small",
+  30,
+  "baby"
+);
+createAnimal(
+  "marine",
+  "piranha.svg",
+  "predator",
+  "female",
+  "small",
+  30,
+  "baby"
+);
+createAnimal(
+  "marine",
+  "piranha.svg",
+  "predator",
+  "female",
+  "small",
+  30,
+  "baby"
+);
 
 function lerp(start, end, amount) {
   return (1 - amount) * start + amount * end;
 }
+let predators = [];
+let preys = [];
 
+livingThings.forEach((fish) => {
+  if (fish.role === "predator") {
+    predators.push(fish);
+  } else {
+    preys.push(fish);
+  }
+});
 // Update the position and direction of each fish every frame
 requestAnimationFrame(function update() {
-  document.getElementById("population").innerText =
-    "Fish count: " + livingThings.length;
+  document.getElementById("living-count").innerText =
+    "Preys count: " +
+    preys.length +
+    " " +
+    "Predators count: " +
+    predators.length;
   livingThings.forEach((fish) => {
-    fish.update();
-    fish.turn();
-    fish.fishController();
+    fish.live();
   });
   requestAnimationFrame(update);
 });

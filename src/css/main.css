@@ -22,7 +22,7 @@ img{
     background: #5988a69c;
     opacity: 0.5;
 }
-#population{
+.header h2{
     margin-top: 20px;
     text-align: center;
     font-family: 'Gill Sans', 'Gill Sans MT', 'Trebuchet MS', sans-serif;
@@ -36,6 +36,16 @@ img{
     justify-content: center;
     align-items: center;
 
+}
+.header{
+    position: relative;
+    display: flex;
+    background-color: #0000009c;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    z-index: 100;
 }
 .aquarium{
     height: 100vh;
