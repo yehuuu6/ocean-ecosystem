@@ -14,6 +14,9 @@ body{
 img{
     -webkit-user-drag: none;
 }
+.fish{
+    padding: 25px;
+}
 .header h2{
     text-align: center;
     font-family: 'Golos Text', sans-serif;
@@ -47,7 +50,7 @@ img{
 }
 .role-container{
     position: absolute;
-    top: -10px;
+    top: 20px;
     width: auto;
     height: auto;
     border-radius: 5px;
@@ -64,4 +67,43 @@ img{
     font-size: 12px;
     text-transform: capitalize;
     color: aliceblue;
+}
+.info-box{
+    position: absolute;
+    color: aliceblue;
+    top: 35%;
+    left: 0;
+    width: auto;
+    background: #000000b5;
+    padding: 35px 55px 35px 25px;
+    gap: 10px;
+    height: auto;
+    display: none;
+    justify-content: center;
+    flex-direction: column;
+    text-transform: capitalize;
+    z-index: 300;
+}
+.info-box h2{
+    font-size: 1.2rem;
+    font-family: 'Golos Text', sans-serif;
+    letter-spacing: 2px;
+    color: aliceblue;
+}
+#hide{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: auto;
+    padding: 5px;
+    height: 30px;
+    background: #000000b5;
+    color: aliceblue;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    outline: none;
+    border: none;
+    align-items: center;
+    cursor: pointer;
 }
