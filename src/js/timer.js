@@ -1,6 +1,7 @@
 let hours = 0;
 let minutes = 0;
 let seconds = 0;
+let timerInterval;
 
 function updateTimer() {
   // Increment the seconds
@@ -24,13 +25,17 @@ function updateTimer() {
   // Display the time in the format hh:mm:ss
   let timer = document.getElementById("timer");
   timer.innerHTML =
-    "Simulation Time: " +
-    formattedHours +
-    ":" +
-    formattedMinutes +
-    ":" +
-    formattedSeconds;
+    formattedHours + ":" + formattedMinutes + ":" + formattedSeconds;
 }
 
 // Update the timer every second
-setInterval(updateTimer, 1000);
+timerInterval = setInterval(updateTimer, 1000);
+
+// Pause the timer when the page is not focused
+document.addEventListener("visibilitychange", function () {
+  if (document.hidden) {
+    clearInterval(timerInterval);
+  } else {
+    timerInterval = setInterval(updateTimer, 1000);
+  }
+});
