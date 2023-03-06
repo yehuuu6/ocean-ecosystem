@@ -10,20 +10,36 @@
     <title>Ocean Eco System</title>
   </head>
   <body>
-    <div class="aquarium">
-      <div class="header">
-        <h2 id="living-count">Population Count: null</h2>
-        <h2 id="death-count">Total Deaths: null</h2>
+    <div class="header">
+      <div class="header-item">
+        <h2>Ocean Eco System</h2>
       </div>
-      <div id="info-box" class="info-box">
-        <h2>Selected animal info;</h2>
-        <span id="genes">Genes: </span>
-        <span id="age">Age: </span>
-        <span id="hunger">Hunger: </span>
-        <span id="speed">Speed: </span>
-        <button id="hide">Hide Box</button>
+      <div class="header-item">
+        <h2 id="living-count">Population Count: null</h2>
+      </div>
+      <div class="header-item">
+        <h2 id="dead-count">Total Deaths: null</h2>
+      </div>
+      <div class="header-item">
+        <h2 id="timer">Simulation Time: null</h2>
+      </div>
+      <div class="header-item">
+        <h3 id="author">
+          Author:
+          <a target="_blank" href="https://github.com/sscorpi">sscorpi</a>
+        </h3>
       </div>
     </div>
+    <div id="info-box" class="info-box">
+      <h2>Selected animal info;</h2>
+      <span id="genes">Genes: </span>
+      <span id="age">Age: </span>
+      <span id="hunger">Hunger: </span>
+      <span id="speed">Speed: </span>
+      <button id="hide">Hide Box</button>
+    </div>
+    <div class="aquarium"></div>
     <script src="src/js/main.js"></script>
+    <script src="src/js/timer,js"></script>
   </body>
 </html>
