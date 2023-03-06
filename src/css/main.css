@@ -39,9 +39,8 @@ img{
     display: flex;
     background-color: #0000009a;
     backdrop-filter: blur(5px);
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
     padding: 20px;
     z-index: 200;
 }
@@ -63,8 +62,26 @@ img{
     background-color: #0000009c;
     z-index: 100;
 }
+.header-item{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+.header-item a,h3{
+    font-size: 1rem;
+    font-family: 'Golos Text', sans-serif;
+    letter-spacing: 1px;
+    color: aliceblue;
+}
+.header-item a{
+    text-decoration: none;
+}
+.header-item a:hover{
+    text-decoration: underline;
+}
 .role-item{
-    font-size: 12px;
+    font-size: 10px;
     text-transform: capitalize;
     color: aliceblue;
 }
@@ -75,8 +92,8 @@ img{
     left: 0;
     width: auto;
     background: #000000b5;
-    padding: 35px 55px 35px 25px;
-    gap: 10px;
+    padding: 25px 45px 25px 15px;
+    gap: 7px;
     height: auto;
     display: none;
     justify-content: center;
@@ -84,10 +101,15 @@ img{
     text-transform: capitalize;
     z-index: 300;
 }
-.info-box h2{
-    font-size: 1.2rem;
+.info-box span{
+    font-size: 0.7rem;
     font-family: 'Golos Text', sans-serif;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
+}
+.info-box h2{
+    font-size: 1rem;
+    font-family: 'Golos Text', sans-serif;
+    letter-spacing: 1px;
     color: aliceblue;
 }
 #hide{
@@ -97,6 +119,7 @@ img{
     width: auto;
     padding: 5px;
     height: 30px;
+    font-size: 10px;
     background: #000000b5;
     color: aliceblue;
     font-weight: 600;
