@@ -14,9 +14,6 @@ body{
 img{
     -webkit-user-drag: none;
 }
-.fish{
-    padding: 25px;
-}
 .header h2{
     text-align: center;
     font-family: 'Golos Text', sans-serif;
@@ -34,8 +31,7 @@ img{
     align-items: center;
 
 }
-.header{
-    position: relative;
+.tab{
     display: flex;
     background-color: #0000009a;
     backdrop-filter: blur(5px);
@@ -43,13 +39,20 @@ img{
     align-items: center;
     padding: 20px;
     z-index: 200;
+    width: 100%;
+}
+.header{
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 .aquarium{
     height: 100vh;
 }
 .role-container{
     position: absolute;
-    top: 20px;
+    top:-60px;
+    left: -35px;
     width: auto;
     height: auto;
     border-radius: 5px;
@@ -62,22 +65,22 @@ img{
     background-color: #0000009c;
     z-index: 100;
 }
-.header-item{
+.tab-item{
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 5px;
 }
-.header-item a,h3{
+.tab-item a,h3{
     font-size: 1rem;
     font-family: 'Golos Text', sans-serif;
     letter-spacing: 1px;
     color: aliceblue;
 }
-.header-item a{
+.tab-item a{
     text-decoration: none;
 }
-.header-item a:hover{
+.tab-item a:hover{
     text-decoration: underline;
 }
 .role-item{
