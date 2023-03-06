@@ -28,7 +28,7 @@ const badGenePool = [
   "bulky",
 ];
 
-let shrimpSpawnRate = 2500;
+let shrimpSpawnRate = 10000;
 // Define the Fish class
 class Fish {
   constructor(svg, role, gender, size, speed, age) {
@@ -40,6 +40,8 @@ class Fish {
     this.isSelected = false;
     this.selectedGenes = [];
 
+    // Select random genes from the gene pool
+
     const goodGeneIndex = Math.floor(Math.random() * goodGenePool.length);
     let badGeneIndex;
     do {
@@ -47,6 +49,10 @@ class Fish {
     } while (badGeneIndex === goodGeneIndex);
     this.selectedGenes.push(goodGenePool[goodGeneIndex]);
     this.selectedGenes.push(badGenePool[badGeneIndex]);
+
+    if (speed < 5) {
+      speed = speed + (Math.floor(Math.random() * 6) + 5);
+    }
 
     this.size = size;
     this.age = age;
@@ -60,7 +66,7 @@ class Fish {
     this.isAlive = true;
     this.agingFactor = 10000;
     this.hungerFactor = 2000;
-    this.eyeSigth = 250;
+    this.eyeSigth = 300;
     this.stamina = 200 + Math.floor(Math.random() * 11) + 10;
     this.maxStamina = this.stamina;
 
@@ -352,9 +358,9 @@ class Fish {
     this.x = lerpX;
     this.y = lerpY;
 
+    const closestFish = this.getClosestFish();
     // If predator is close to prey, start chasing it
     if (this.mood == "hungry" || this.mood == "starving") {
-      const closestFish = this.getClosestFish();
       if (
         closestFish &&
         this.power > closestFish.power &&
@@ -382,7 +388,7 @@ class Fish {
       }
     }
     // If prey is close to a predator, start running away
-    const closestFish = this.getClosestFish();
+
     if (
       closestFish &&
       this.power < closestFish.power &&
@@ -496,7 +502,7 @@ class Fish {
 
   turn() {
     // Randomly change the direction of the fish smoothly over time
-    const turnAngle = Math.random() * 10 - 5;
+    const turnAngle = Math.random() * 8 - 4;
     this.angle += turnAngle;
   }
 
@@ -514,7 +520,7 @@ class Fish {
     }
     if (this.state == "Exhausted" || this.state == "Wandering") {
       this.increaseStamina();
-      if (this.stamina == 100) {
+      if (this.stamina == this.maxStamina) {
         this.isExhausted = false;
         this.setState("Wandering");
         this.resetSpeed();
@@ -661,13 +667,17 @@ function lerp(start, end, amount) {
 }
 
 // Randomly spawn shrimp every 10 seconds with a random speed and gender
+const shrimpSpeed = Math.floor(Math.random() * 6) + 5;
+if (shrimpSpeed < 5) {
+  shrimpSpeed = shrimpSpeed + (Math.floor(Math.random() * 6) + 5);
+}
 setInterval(() => {
   createAnimal(
     "shrimp.svg",
     "prey",
     getRandomGender(),
     "tiny",
-    Math.floor(Math.random() * 6) + 5,
+    shrimpSpeed,
     "adult"
   );
 }, shrimpSpawnRate);
@@ -682,7 +692,6 @@ setInterval(() => {
 }, 500);
 
 // Update the position and direction of each fish every frame
-
 requestAnimationFrame(function update() {
   document.getElementById("living-count").innerText =
     "Prey Count: " + preys + " " + "Predator Count: " + predators;
