@@ -5,8 +5,10 @@ const aquariumHeight = window.innerHeight;
 
 const infoBox = document.getElementById("info-box");
 const hideInfo = document.getElementById("hide");
+const roleContainerHider = document.getElementById("roleContainerHider");
 
 let updateInfo;
+let isHidden = false;
 
 // Define the school of fish
 const livingThings = [];
@@ -28,7 +30,7 @@ const badGenePool = [
   "bulky",
 ];
 
-let shrimpSpawnRate = 2500;
+let shrimpSpawnRate = 1000;
 // Define the Fish class
 class Fish {
   constructor(svg, role, gender, size, speed, age, goodGenes, badGenes) {
@@ -41,6 +43,7 @@ class Fish {
     this.selectedGenes = [];
     this.goodGenePool = goodGenes;
     this.badGenePool = badGenes;
+    this.species = this.svg.split(".")[0];
 
     // Select random genes from the gene pool
 
@@ -100,7 +103,7 @@ class Fish {
           this.baseSpeed = this.speed;
           break;
         case "albino":
-          this.img.style.filter = "grayscale(100%)";
+          this.img.style.filter = "brightness(0.35) invert(1)";
           break;
         case "fast metabolism":
           this.hungerFactor = this.hungerFactor - 750;
@@ -212,6 +215,9 @@ class Fish {
     this.element.addEventListener("click", (e) => {
       e.stopPropagation();
       if (this.isAlive) {
+        if (isHidden) {
+          this.roleContainer.style.display = "flex";
+        }
         infoBox.style.display = "flex";
         clearInterval(updateInfo);
         updateFishInfo(this);
@@ -233,6 +239,9 @@ class Fish {
     // If clicked to the aquarium, remove the red circle around the fish
     aquarium.addEventListener("click", () => {
       infoBox.style.display = "none";
+      if (isHidden) {
+        this.roleContainer.style.display = "none";
+      }
       this.isSelected = false;
       this.element.style.outline = "none";
       this.element.style.outlineOffset = "none";
@@ -243,6 +252,11 @@ class Fish {
     // Create role container
 
     this.roleContainer.className = "role-container";
+    if (!isHidden) {
+      this.roleContainer.style.display = "flex";
+    } else {
+      this.roleContainer.style.display = "none";
+    }
 
     aquarium.appendChild(this.roleContainer);
     // Display fish gender on fish but do not rotate it with the fish
@@ -322,7 +336,7 @@ class Fish {
     deadFish.className = "fish";
     const deadFishImg = document.createElement("img");
     deadFishImg.src = "./assets/svg/env/dead.svg";
-    deadFishImg.className = deathSize;
+    deadFishImg.className = deathSize + " dead";
     deadFish.appendChild(deadFishImg);
     deadFish.style.transform = `translate(${fish.x}px, ${fish.y}px) rotate(${fish.angle}deg)`;
     aquarium.appendChild(deadFish);
@@ -596,17 +610,22 @@ class Fish {
 
         // Create 10 or less babies
         let babyCount = Math.floor(Math.random() * 15);
-        switch (this.size) {
-          case "medium":
-            babyCount = babyCount - 1;
-            break;
-          case "large":
-            babyCount = babyCount - 3;
-            break;
-        }
         if (babyCount <= 0) {
           babyCount = 2;
         }
+
+        // Get current alive count of this kind
+        let currentCount = 0;
+        livingThings.forEach((fish) => {
+          if (fish.svg == this.svg) {
+            currentCount++;
+          }
+        });
+
+        if (currentCount + babyCount > 100) {
+          babyCount = 1;
+        }
+
         for (let i = 0; i < babyCount; i++) {
           const baby = createAnimal(
             this.svg,
@@ -702,6 +721,7 @@ function getRandomGender() {
   return gender;
 }
 // Instantiate elements for infos
+const speciesInfo = document.getElementById("species");
 const genInfo = document.getElementById("genes");
 const ageInfo = document.getElementById("age");
 const hungerInfo = document.getElementById("hunger");
@@ -718,6 +738,7 @@ const updateFishInfo = (fish) => {
   }
   // Create interval to update info
   updateInfo = setInterval(() => {
+    speciesInfo.innerText = "Species: " + fish.species;
     genInfo.innerText = "Genes: " + fish.selectedGenes;
     ageInfo.innerText = "Age: " + fish.lifeTime;
     if (!canStarve) {
@@ -752,6 +773,16 @@ createAnimal(
   badGenePool
 );
 createAnimal(
+  "turtle.svg",
+  "prey",
+  "male",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
   "octopus2.svg",
   "prey",
   "male",
@@ -820,7 +851,7 @@ createAnimal(
   "adult",
   goodGenePool,
   badGenePool
-);
+); /*
 createAnimal(
   "clown.svg",
   "prey",
@@ -960,7 +991,7 @@ createAnimal(
   "adult",
   goodGenePool,
   badGenePool
-);
+);*/
 createAnimal(
   "golden.svg",
   "prey",
@@ -1008,6 +1039,28 @@ function lerp(start, end, amount) {
   return (1 - amount) * start + amount * end;
 }
 
+function hideContainers(value) {
+  const _containers = document.querySelectorAll(".role-container");
+  _containers.forEach((container) => {
+    if (value) {
+      isHidden = true;
+      container.style.display = "none";
+    } else {
+      isHidden = false;
+      container.style.display = "flex";
+    }
+  });
+}
+
+roleContainerHider.addEventListener("change", () => {
+  console.log("checked");
+  if (roleContainerHider.checked) {
+    hideContainers(true);
+  } else {
+    hideContainers(false);
+  }
+});
+
 // Randomly spawn shrimp every 10 seconds with a random speed and gender
 const shrimpSpeed = Math.floor(Math.random() * 6) + 5;
 if (shrimpSpeed < 5) {
@@ -1046,6 +1099,5 @@ requestAnimationFrame(function update() {
   livingThings.forEach((fish) => {
     fish.live();
   });
-
   requestAnimationFrame(update);
 });
