@@ -1,4 +1,4 @@
-# Ocean Eco System
+# Ocean Ecosystem
 
 > I am trying to create an eco system on web. Mostly inspired by Sebastian Lague's Unity version.
 
