@@ -16,7 +16,7 @@ const goodGenePool = [
   "normal",
   "slow metabolism",
   "slow aging",
-  "good eyesight",
+  "good vision",
   "agile",
 ];
 const badGenePool = [
@@ -24,14 +24,14 @@ const badGenePool = [
   "albino",
   "fast metabolism",
   "fast aging",
-  "bad eyesight",
+  "bad vision",
   "bulky",
 ];
 
-let shrimpSpawnRate = 10000;
+let shrimpSpawnRate = 2500;
 // Define the Fish class
 class Fish {
-  constructor(svg, role, gender, size, speed, age) {
+  constructor(svg, role, gender, size, speed, age, goodGenes, badGenes) {
     // Fish definitions
     this.svg = svg;
     this.role = role;
@@ -39,16 +39,18 @@ class Fish {
     this.intervals = [];
     this.isSelected = false;
     this.selectedGenes = [];
+    this.goodGenePool = goodGenes;
+    this.badGenePool = badGenes;
 
     // Select random genes from the gene pool
 
-    const goodGeneIndex = Math.floor(Math.random() * goodGenePool.length);
+    const goodGeneIndex = Math.floor(Math.random() * this.goodGenePool.length);
     let badGeneIndex;
     do {
-      badGeneIndex = Math.floor(Math.random() * badGenePool.length);
+      badGeneIndex = Math.floor(Math.random() * this.badGenePool.length);
     } while (badGeneIndex === goodGeneIndex);
-    this.selectedGenes.push(goodGenePool[goodGeneIndex]);
-    this.selectedGenes.push(badGenePool[badGeneIndex]);
+    this.selectedGenes.push(this.goodGenePool[goodGeneIndex]);
+    this.selectedGenes.push(this.badGenePool[badGeneIndex]);
 
     if (speed < 5) {
       speed = speed + (Math.floor(Math.random() * 6) + 5);
@@ -59,16 +61,19 @@ class Fish {
     this.state = "Wandering";
     this.mood = "healthy";
     this.baseSpeed = speed;
+    this.isPregnant = false;
     this.hunger = 0;
     this.speed = speed;
     this.speedLock = false;
+    this.breedLock = false;
     this.isExhausted = false;
     this.isAlive = true;
-    this.agingFactor = 10000;
-    this.hungerFactor = 2000;
+    this.agingFactor = 2500;
+    this.hungerFactor = 1250;
     this.eyeSigth = 300;
     this.stamina = 200 + Math.floor(Math.random() * 11) + 10;
     this.maxStamina = this.stamina;
+    this.canBreed = false;
 
     // Create the HTML element for the fish
     this.element = document.createElement("div");
@@ -81,7 +86,7 @@ class Fish {
 
     // Set fish properties based on selectedGenes
     this.selectedGenes.forEach((gene) => {
-      let randomEyeSightVal = Math.floor(Math.random() * 51) + 50;
+      let randomEyeSigthVal = Math.floor(Math.random() * 51) + 50;
       let randomStaminaVal = Math.floor(Math.random() * 11) + 10;
       switch (gene) {
         case "healthy":
@@ -101,19 +106,19 @@ class Fish {
           this.hungerFactor = this.hungerFactor - 750;
           break;
         case "slow aging":
-          this.agingFactor = this.agingFactor + 2500;
+          this.agingFactor = this.agingFactor + 750;
           break;
         case "slow metabolism":
           this.hungerFactor = this.hungerFactor + 750;
           break;
         case "fast aging":
-          this.agingFactor = this.agingFactor - 2500;
+          this.agingFactor = this.agingFactor - 750;
           break;
-        case "bad eyesight":
-          this.eyeSigth = this.eyeSigth - randomEyeSightVal;
+        case "bad vision":
+          this.eyeSigth = this.eyeSigth - randomEyeSigthVal;
           break;
-        case "good eyesight":
-          this.eyeSigth = this.eyeSigth + randomEyeSightVal;
+        case "good vision":
+          this.eyeSigth = this.eyeSigth + randomEyeSigthVal;
           break;
         case "bulky":
           this.stamina = this.stamina - randomStaminaVal;
@@ -134,14 +139,17 @@ class Fish {
     switch (this.age) {
       case "baby":
         this.setPower(true);
+        this.canBreed = false;
         this.lifeTime = 1;
         break;
       case "adult":
         this.setPower(false);
+        this.canBreed = true;
         this.lifeTime = 15;
         break;
       case "elder":
         this.setPower(false);
+        this.canBreed = true;
         this.lifeTime = 30;
         break;
     }
@@ -225,13 +233,11 @@ class Fish {
     // If clicked to the aquarium, remove the red circle around the fish
     aquarium.addEventListener("click", () => {
       infoBox.style.display = "none";
-      livingThings.forEach((fish) => {
-        fish.isSelected = false;
-        fish.element.style.outline = "none";
-        fish.element.style.outlineOffset = "none";
-        fish.element.style.cursor = "pointer";
-        fish.element.style.transform = `translate(${fish.x}px, ${fish.y}px) rotate(${fish.angle}deg)`;
-      });
+      this.isSelected = false;
+      this.element.style.outline = "none";
+      this.element.style.outlineOffset = "none";
+      this.element.style.cursor = "pointer";
+      this.element.style.transform = `translate(${this.x}px, ${this.y}px) rotate(${this.angle}deg)`;
     });
 
     // Create role container
@@ -273,15 +279,18 @@ class Fish {
       }
     } else if (this.lifeTime >= 30) {
       this.age = "elder";
+      this.canBreed = true;
       this.fishGender.innerText = this.gender + " " + this.age;
       this.img.className = this.size;
     } else if (this.lifeTime >= 15) {
       this.age = "adult";
+      this.canBreed = true;
       this.fishGender.innerText = this.gender + " " + this.age;
       this.img.className = this.size;
       this.setPower();
     } else if (this.lifeTime >= 0) {
       this.age = "baby";
+      this.canBreed = false;
       this.img.className = "baby";
       this.fishGender.innerText = this.gender + " " + this.age;
     }
@@ -293,6 +302,13 @@ class Fish {
   }
 
   die(fish) {
+    let deathSize;
+    if (fish.age == "baby") {
+      deathSize = "baby";
+    } else {
+      deathSize = fish.size;
+    }
+
     deathCount++;
     if (fish.isSelected) {
       infoBox.style.display = "none";
@@ -306,7 +322,7 @@ class Fish {
     deadFish.className = "fish";
     const deadFishImg = document.createElement("img");
     deadFishImg.src = "./assets/svg/env/dead.svg";
-    deadFishImg.className = "small";
+    deadFishImg.className = deathSize;
     deadFish.appendChild(deadFishImg);
     deadFish.style.transform = `translate(${fish.x}px, ${fish.y}px) rotate(${fish.angle}deg)`;
     aquarium.appendChild(deadFish);
@@ -398,10 +414,11 @@ class Fish {
         Math.pow(this.x - closestFish.x, 2) +
           Math.pow(this.y - closestFish.y, 2)
       );
-      if (distance2 < this.eyeSigth) {
+      if (distance2 < this.eyeSigth - 50) {
         if (!this.isExhausted) {
           this.setState("Escaping");
         }
+        this.canBreed = false;
         this.angle = Math.atan2(this.y - closestFish.y, this.x - closestFish.x);
         this.angle = (this.angle * 180) / Math.PI;
       } else {
@@ -421,7 +438,7 @@ class Fish {
           Math.pow(this.x - closestFish.x, 2) +
             Math.pow(this.y - closestFish.y, 2)
         );
-        if (distance3 < 30) {
+        if (distance3 < 50) {
           this.hunger -= closestFish.nutritivity;
           // If selectedGenes has sick gene, set mood to sick otherwise set to healthy
           this.setMood();
@@ -429,6 +446,43 @@ class Fish {
           this.resetSpeed();
           this.die(closestFish);
           console.log(this.svg + " ate a " + closestFish.svg);
+        }
+      }
+    }
+
+    // If canBreed is true, look for a mate and chase it
+    if (
+      this.canBreed &&
+      this.size != "tiny" &&
+      closestFish.canBreed &&
+      !this.breedLock
+    ) {
+      this.setState("Looking for mate");
+      if (
+        closestFish &&
+        this.svg == closestFish.svg &&
+        this != closestFish &&
+        closestFish.age != "baby" &&
+        this.gender != closestFish.gender
+      ) {
+        const distance4 = Math.sqrt(
+          Math.pow(this.x - closestFish.x, 2) +
+            Math.pow(this.y - closestFish.y, 2)
+        );
+        if (distance4 < this.eyeSigth + 100) {
+          this.angle = Math.atan2(
+            closestFish.y - this.y,
+            closestFish.x - this.x
+          );
+          this.angle = (this.angle * 180) / Math.PI;
+
+          if (distance4 < 40) {
+            this.breed(closestFish);
+          }
+        } else {
+          if (!this.isExhausted) {
+            this.setState("Wandering");
+          }
         }
       }
     }
@@ -455,21 +509,48 @@ class Fish {
   // Set mood
   setMood() {
     let defaultMood;
-    if (this.selectedGenes.includes("sick")) {
+    if (this.isPregnant) {
+      defaultMood = "pregnant";
+    } else if (this.selectedGenes.includes("sick")) {
       defaultMood = "sick";
     } else {
       defaultMood = "healthy";
     }
     if (this.hunger > this.hungerVal) {
+      this.canBreed = false;
       this.mood = "hungry";
     }
     if (this.hunger > this.starvingVal) {
+      this.canBreed = false;
       this.mood = "starving";
     }
     if (this.hunger < this.hungerVal) {
+      if (this.age != "baby") {
+        this.canBreed = true;
+      }
       this.mood = defaultMood;
     }
     this.fishState.innerText = this.state + " " + this.mood;
+  }
+
+  breed(fish) {
+    if (!this.breedLock && fish.canBreed) {
+      this.setSpeed(0, true);
+      this.setState("Breeding");
+      this.breedLock = true;
+      setTimeout(() => {
+        this.setState("Wandering");
+        this.resetSpeed();
+
+        if (this.gender == "female") {
+          this.setMood();
+          this.giveBirth(fish);
+        } else {
+          this.breeedLock = true;
+          this.canBreed = false;
+        }
+      }, 3000);
+    }
   }
 
   // Get closest fish
@@ -500,6 +581,55 @@ class Fish {
     }
   }
 
+  giveBirth(father) {
+    // Give a random number for pregnancy time
+    let pregnancyTime = Math.floor(Math.random() * 10000) + 10000;
+    console.log(pregnancyTime);
+    this.isPregnant = true;
+    this.canBreed = false;
+    this.breedLock = true;
+    if (this.isPregnant) {
+      this.setMood();
+      this.pregnancyInterval = setTimeout(() => {
+        this.setState("Wandering");
+        this.resetSpeed();
+
+        // Create 10 or less babies
+        let babyCount = Math.floor(Math.random() * 15);
+        switch (this.size) {
+          case "medium":
+            babyCount = babyCount - 1;
+            break;
+          case "large":
+            babyCount = babyCount - 3;
+            break;
+        }
+        if (babyCount <= 0) {
+          babyCount = 2;
+        }
+        for (let i = 0; i < babyCount; i++) {
+          const baby = createAnimal(
+            this.svg,
+            this.role,
+            getRandomGender(),
+            this.size,
+            Math.floor(Math.random() * 11) + 10,
+            "baby",
+            this.selectedGenes,
+            father.selectedGenes
+          );
+
+          // put baby near mother
+          baby.x = this.x + 10;
+          baby.y = this.y + 10;
+        }
+
+        this.isPregnant = false;
+      }, pregnancyTime);
+      this.intervals.push(this.pregnancyInterval);
+    }
+  }
+
   turn() {
     // Randomly change the direction of the fish smoothly over time
     const turnAngle = Math.random() * 8 - 4;
@@ -518,7 +648,11 @@ class Fish {
         this.setSpeed(this.speed - 5, true);
       }
     }
-    if (this.state == "Exhausted" || this.state == "Wandering") {
+    if (
+      this.state == "Exhausted" ||
+      this.state == "Wandering" ||
+      this.state == "Looking for mate"
+    ) {
       this.increaseStamina();
       if (this.stamina == this.maxStamina) {
         this.isExhausted = false;
@@ -534,9 +668,28 @@ class Fish {
     this.fishController();
   }
 }
-const createAnimal = (svg, role, gender, size, speed, age) => {
-  const fish = new Fish(svg, role, gender, size, speed, age);
+const createAnimal = (
+  svg,
+  role,
+  gender,
+  size,
+  speed,
+  age,
+  goodGenes,
+  badGenes
+) => {
+  const fish = new Fish(
+    svg,
+    role,
+    gender,
+    size,
+    speed,
+    age,
+    goodGenes,
+    badGenes
+  );
   livingThings.push(fish);
+  return fish;
 };
 function getRandomGender() {
   let gender;
@@ -581,83 +734,272 @@ const updateFishInfo = (fish) => {
 createAnimal(
   "shark.svg",
   "predator",
-  getRandomGender(),
+  "male",
   "large",
   Math.floor(Math.random() * 11) + 10,
-  "adult"
+  "adult",
+  goodGenePool,
+  badGenePool
 );
-
+createAnimal(
+  "turtle.svg",
+  "prey",
+  "female",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "octopus2.svg",
+  "prey",
+  "male",
+  "medium",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "octopus2.svg",
+  "prey",
+  "female",
+  "medium",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "octopus1.svg",
+  "prey",
+  "male",
+  "medium",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "octopus1.svg",
+  "prey",
+  "female",
+  "medium",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
 createAnimal(
   "clown.svg",
   "prey",
-  getRandomGender(),
+  "female",
   "small",
   Math.floor(Math.random() * 11) + 10,
-  "adult"
+  "adult",
+  goodGenePool,
+  badGenePool
 );
 createAnimal(
   "dolphin.svg",
   "prey",
-  getRandomGender(),
+  "female",
   "medium",
   Math.floor(Math.random() * 11) + 10,
-  "baby"
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "dolphin.svg",
+  "prey",
+  "male",
+  "medium",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
 );
 createAnimal(
   "clown.svg",
   "prey",
-  getRandomGender(),
+  "male",
   "small",
   Math.floor(Math.random() * 11) + 10,
-  "baby"
+  "adult",
+  goodGenePool,
+  badGenePool
 );
 createAnimal(
   "dorito.svg",
   "prey",
-  getRandomGender(),
+  "female",
   "small",
   Math.floor(Math.random() * 11) + 10,
-  "adult"
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "dorito.svg",
+  "prey",
+  "male",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
 );
 createAnimal(
   "stylish.svg",
   "prey",
-  getRandomGender(),
+  "male",
   "small",
   Math.floor(Math.random() * 11) + 10,
-  "adult"
+  "adult",
+  goodGenePool,
+  badGenePool
 );
 createAnimal(
   "stylish.svg",
   "prey",
-  getRandomGender(),
+  "female",
   "small",
   Math.floor(Math.random() * 11) + 10,
-  "baby"
+  "adult",
+  goodGenePool,
+  badGenePool
 );
 createAnimal(
   "ballon.svg",
   "prey",
-  getRandomGender(),
+  "female",
   "small",
   Math.floor(Math.random() * 11) + 10,
-  "elder"
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "ballon.svg",
+  "prey",
+  "male",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "blue.svg",
+  "prey",
+  "female",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "blue.svg",
+  "prey",
+  "male",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "bow.svg",
+  "prey",
+  "female",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "bow.svg",
+  "prey",
+  "male",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
 );
 createAnimal(
   "shark.svg",
   "predator",
-  getRandomGender(),
+  "female",
   "large",
   Math.floor(Math.random() * 11) + 10,
-  "baby"
+  "adult",
+  goodGenePool,
+  badGenePool
 );
 createAnimal(
   "piranha.svg",
   "predator",
-  getRandomGender(),
+  "male",
   "small",
   Math.floor(Math.random() * 11) + 10,
-  "baby"
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "piranha.svg",
+  "predator",
+  "female",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "golden.svg",
+  "prey",
+  "male",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "golden.svg",
+  "prey",
+  "female",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "seahorse.svg",
+  "prey",
+  "male",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
+);
+createAnimal(
+  "seahorse.svg",
+  "prey",
+  "female",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool
 );
 
 let deathCount = 0;
@@ -678,17 +1020,21 @@ setInterval(() => {
     getRandomGender(),
     "tiny",
     shrimpSpeed,
-    "adult"
+    "adult",
+    goodGenePool,
+    badGenePool
   );
 }, shrimpSpawnRate);
 let predators;
 let preys;
+let legitLivings;
 // Update preys and predators arrays every .5 seconds
 setInterval(() => {
   predators = livingThings.filter((fish) => fish.role === "predator");
   predators = predators.length;
   preys = livingThings.filter((fish) => fish.role === "prey");
   preys = preys.length;
+  legitLivings = livingThings.filter((fish) => fish.size !== "tiny");
 }, 500);
 
 // Update the position and direction of each fish every frame
