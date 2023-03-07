@@ -71,8 +71,8 @@ class Fish {
     this.breedLock = false;
     this.isExhausted = false;
     this.isAlive = true;
-    this.agingFactor = 2500;
-    this.hungerFactor = 1250;
+    this.agingFactor = 5000;
+    this.hungerFactor = 2250;
     this.eyeSigth = 300;
     this.stamina = 200 + Math.floor(Math.random() * 11) + 10;
     this.maxStamina = this.stamina;
@@ -176,7 +176,6 @@ class Fish {
         this.setMood();
         if (this.hunger > this.deathVal) {
           this.die(this);
-          console.log(this.svg + "died of hunger");
         }
       }, this.hungerFactor);
       this.intervals.push(this.hungerInterval);
@@ -288,7 +287,6 @@ class Fish {
   ageFish() {
     if (this.lifeTime >= this.lifeSpan) {
       if (this.isAlive) {
-        console.log(this.svg + " died of old age.");
         this.die(this);
       }
     } else if (this.lifeTime >= 30) {
@@ -459,7 +457,6 @@ class Fish {
           this.setState("Wandering");
           this.resetSpeed();
           this.die(closestFish);
-          console.log(this.svg + " ate a " + closestFish.svg);
         }
       }
     }
@@ -598,7 +595,6 @@ class Fish {
   giveBirth(father) {
     // Give a random number for pregnancy time
     let pregnancyTime = Math.floor(Math.random() * 10000) + 10000;
-    console.log(pregnancyTime);
     this.isPregnant = true;
     this.canBreed = false;
     this.breedLock = true;
@@ -783,8 +779,8 @@ createAnimal(
   badGenePool
 );
 createAnimal(
-  "octopus2.svg",
-  "prey",
+  "octopus.svg",
+  "predator",
   "male",
   "medium",
   Math.floor(Math.random() * 11) + 10,
@@ -793,8 +789,8 @@ createAnimal(
   badGenePool
 );
 createAnimal(
-  "octopus2.svg",
-  "prey",
+  "octopus.svg",
+  "predator",
   "female",
   "medium",
   Math.floor(Math.random() * 11) + 10,
@@ -803,8 +799,8 @@ createAnimal(
   badGenePool
 );
 createAnimal(
-  "octopus1.svg",
-  "prey",
+  "angler.svg",
+  "predator",
   "male",
   "medium",
   Math.floor(Math.random() * 11) + 10,
@@ -813,8 +809,8 @@ createAnimal(
   badGenePool
 );
 createAnimal(
-  "octopus1.svg",
-  "prey",
+  "angler.svg",
+  "predator",
   "female",
   "medium",
   Math.floor(Math.random() * 11) + 10,
@@ -851,7 +847,7 @@ createAnimal(
   "adult",
   goodGenePool,
   badGenePool
-); /*
+);
 createAnimal(
   "clown.svg",
   "prey",
@@ -863,46 +859,6 @@ createAnimal(
   badGenePool
 );
 createAnimal(
-  "dorito.svg",
-  "prey",
-  "female",
-  "small",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool
-);
-createAnimal(
-  "dorito.svg",
-  "prey",
-  "male",
-  "small",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool
-);
-createAnimal(
-  "stylish.svg",
-  "prey",
-  "male",
-  "small",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool
-);
-createAnimal(
-  "stylish.svg",
-  "prey",
-  "female",
-  "small",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool
-);
-createAnimal(
   "ballon.svg",
   "prey",
   "female",
@@ -914,46 +870,6 @@ createAnimal(
 );
 createAnimal(
   "ballon.svg",
-  "prey",
-  "male",
-  "small",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool
-);
-createAnimal(
-  "blue.svg",
-  "prey",
-  "female",
-  "small",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool
-);
-createAnimal(
-  "blue.svg",
-  "prey",
-  "male",
-  "small",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool
-);
-createAnimal(
-  "bow.svg",
-  "prey",
-  "female",
-  "small",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool
-);
-createAnimal(
-  "bow.svg",
   "prey",
   "male",
   "small",
@@ -991,7 +907,7 @@ createAnimal(
   "adult",
   goodGenePool,
   badGenePool
-);*/
+);
 createAnimal(
   "golden.svg",
   "prey",
@@ -1053,7 +969,6 @@ function hideContainers(value) {
 }
 
 roleContainerHider.addEventListener("change", () => {
-  console.log("checked");
   if (roleContainerHider.checked) {
     hideContainers(true);
   } else {
