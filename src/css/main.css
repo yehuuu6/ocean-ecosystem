@@ -51,8 +51,8 @@ img{
 }
 .role-container{
     position: absolute;
-    top:-60px;
-    left: -35px;
+    top:-50px;
+    left: -12px;
     width: auto;
     height: auto;
     border-radius: 5px;
@@ -71,7 +71,7 @@ img{
     align-items: center;
     gap: 5px;
 }
-.tab-item a,h3{
+.tab-item a,h3,input,label{
     font-size: 1rem;
     font-family: 'Golos Text', sans-serif;
     letter-spacing: 1px;
