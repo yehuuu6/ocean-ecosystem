@@ -38,6 +38,7 @@ img{
     justify-content: space-between;
     align-items: center;
     padding: 20px;
+    text-transform: capitalize;
     z-index: 200;
     width: 100%;
 }
