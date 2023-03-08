@@ -30,10 +30,20 @@ const badGenePool = [
   "bulky",
 ];
 
-let shrimpSpawnRate = 1000;
+let shrimpSpawnRate = 5000;
 // Define the Fish class
 class Fish {
-  constructor(svg, role, gender, size, speed, age, goodGenes, badGenes) {
+  constructor(
+    svg,
+    role,
+    gender,
+    size,
+    speed,
+    age,
+    goodGenes,
+    badGenes,
+    generation
+  ) {
     // Fish definitions
     this.svg = svg;
     this.role = role;
@@ -44,6 +54,7 @@ class Fish {
     this.goodGenePool = goodGenes;
     this.badGenePool = badGenes;
     this.species = this.svg.split(".")[0];
+    this.generation = generation;
 
     // Select random genes from the gene pool
 
@@ -71,7 +82,7 @@ class Fish {
     this.breedLock = false;
     this.isExhausted = false;
     this.isAlive = true;
-    this.agingFactor = 5000;
+    this.agingFactor = 1500;
     this.hungerFactor = 2250;
     this.eyeSigth = 300;
     this.stamina = 200 + Math.floor(Math.random() * 11) + 10;
@@ -133,7 +144,7 @@ class Fish {
           break;
       }
     });
-    this.lifeSpan = 30 + Math.random() * 40;
+    this.lifeSpan = Math.floor(Math.random() * 11) + 50;
 
     // Create the HTML element for the fish role
     this.roleElement = document.createElement("span");
@@ -142,18 +153,15 @@ class Fish {
     switch (this.age) {
       case "baby":
         this.setPower(true);
-        this.canBreed = false;
         this.lifeTime = 1;
         break;
       case "adult":
         this.setPower(false);
-        this.canBreed = true;
-        this.lifeTime = 15;
+        this.lifeTime = 20;
         break;
       case "elder":
         this.setPower(false);
-        this.canBreed = true;
-        this.lifeTime = 30;
+        this.lifeTime = 50;
         break;
     }
 
@@ -164,7 +172,7 @@ class Fish {
     }, this.agingFactor);
 
     // Define the fish's hunger values
-    this.hungerVal = Math.floor(Math.random() * 11) + 40;
+    this.hungerVal = Math.floor(Math.random() * 11) + 30;
     this.starvingVal = this.hungerVal + Math.floor(Math.random() * 11) + 10;
     this.deathVal = this.starvingVal + Math.floor(Math.random() * 11) + 30;
     this.intervals.push(this.agingInterval);
@@ -289,20 +297,17 @@ class Fish {
       if (this.isAlive) {
         this.die(this);
       }
-    } else if (this.lifeTime >= 30) {
+    } else if (this.lifeTime >= 40) {
       this.age = "elder";
-      this.canBreed = true;
       this.fishGender.innerText = this.gender + " " + this.age;
       this.img.className = this.size;
-    } else if (this.lifeTime >= 15) {
+    } else if (this.lifeTime >= 20) {
       this.age = "adult";
-      this.canBreed = true;
       this.fishGender.innerText = this.gender + " " + this.age;
       this.img.className = this.size;
       this.setPower();
-    } else if (this.lifeTime >= 0) {
+    } else if (this.lifeTime >= 1) {
       this.age = "baby";
-      this.canBreed = false;
       this.img.className = "baby";
       this.fishGender.innerText = this.gender + " " + this.age;
     }
@@ -466,7 +471,9 @@ class Fish {
       this.canBreed &&
       this.size != "tiny" &&
       closestFish.canBreed &&
-      !this.breedLock
+      !this.breedLock &&
+      this.mood != "starving" &&
+      this.mood != "hungry"
     ) {
       this.setState("Looking for mate");
       if (
@@ -488,7 +495,9 @@ class Fish {
           this.angle = (this.angle * 180) / Math.PI;
 
           if (distance4 < 40) {
-            this.breed(closestFish);
+            if (this.canBreed && closestFish.canBreed) {
+              this.breed(closestFish);
+            }
           }
         } else {
           if (!this.isExhausted) {
@@ -545,23 +554,21 @@ class Fish {
   }
 
   breed(fish) {
-    if (!this.breedLock && fish.canBreed) {
-      this.setSpeed(0, true);
-      this.setState("Breeding");
-      this.breedLock = true;
-      setTimeout(() => {
-        this.setState("Wandering");
-        this.resetSpeed();
+    this.setSpeed(0, true);
+    this.setState("Breeding");
+    this.breedLock = true;
+    setTimeout(() => {
+      this.setState("Wandering");
+      this.resetSpeed();
 
-        if (this.gender == "female") {
-          this.setMood();
-          this.giveBirth(fish);
-        } else {
-          this.breeedLock = true;
-          this.canBreed = false;
-        }
-      }, 3000);
-    }
+      if (this.gender == "female") {
+        this.setMood();
+        this.giveBirth(fish);
+      } else {
+        this.breeedLock = true;
+        this.canBreed = false;
+      }
+    }, 3000);
   }
 
   // Get closest fish
@@ -631,7 +638,8 @@ class Fish {
             Math.floor(Math.random() * 11) + 10,
             "baby",
             this.selectedGenes,
-            father.selectedGenes
+            father.selectedGenes,
+            this.generation + 1
           );
 
           // put baby near mother
@@ -691,7 +699,8 @@ const createAnimal = (
   speed,
   age,
   goodGenes,
-  badGenes
+  badGenes,
+  generation
 ) => {
   const fish = new Fish(
     svg,
@@ -701,7 +710,8 @@ const createAnimal = (
     speed,
     age,
     goodGenes,
-    badGenes
+    badGenes,
+    generation
   );
   livingThings.push(fish);
   return fish;
@@ -718,6 +728,7 @@ function getRandomGender() {
 }
 // Instantiate elements for infos
 const speciesInfo = document.getElementById("species");
+const generationInfo = document.getElementById("generation");
 const genInfo = document.getElementById("genes");
 const ageInfo = document.getElementById("age");
 const hungerInfo = document.getElementById("hunger");
@@ -735,6 +746,7 @@ const updateFishInfo = (fish) => {
   // Create interval to update info
   updateInfo = setInterval(() => {
     speciesInfo.innerText = "Species: " + fish.species;
+    generationInfo.innerText = "Generation: " + fish.generation;
     genInfo.innerText = "Genes: " + fish.selectedGenes;
     ageInfo.innerText = "Age: " + fish.lifeTime;
     if (!canStarve) {
@@ -756,7 +768,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "turtle.svg",
@@ -766,7 +779,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "turtle.svg",
@@ -776,7 +790,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "octopus.svg",
@@ -786,7 +801,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "octopus.svg",
@@ -796,7 +812,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "angler.svg",
@@ -806,7 +823,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "angler.svg",
@@ -816,7 +834,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "clown.svg",
@@ -826,7 +845,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "dolphin.svg",
@@ -836,7 +856,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "dolphin.svg",
@@ -846,7 +867,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "clown.svg",
@@ -856,7 +878,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "ballon.svg",
@@ -866,7 +889,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "ballon.svg",
@@ -876,7 +900,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "shark.svg",
@@ -886,7 +911,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "piranha.svg",
@@ -896,7 +922,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "piranha.svg",
@@ -906,27 +933,30 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
-  "golden.svg",
+  "goldenfish.svg",
   "prey",
   "male",
   "small",
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
-  "golden.svg",
+  "goldenfish.svg",
   "prey",
   "female",
   "small",
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "seahorse.svg",
@@ -936,7 +966,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 createAnimal(
   "seahorse.svg",
@@ -946,7 +977,8 @@ createAnimal(
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
-  badGenePool
+  badGenePool,
+  1
 );
 
 let deathCount = 0;
@@ -990,27 +1022,91 @@ setInterval(() => {
     shrimpSpeed,
     "adult",
     goodGenePool,
-    badGenePool
+    badGenePool,
+    1
   );
 }, shrimpSpawnRate);
 let predators;
 let preys;
-let legitLivings;
+let sharks;
+let piranhas;
+let anglerfish;
+let clownfish;
+let dolphins;
+let ballons;
+let goldenfish;
+let seahorses;
+let shrimp;
+let octopus;
+let turtles;
+
+let dominant = "";
+
+let species = [];
+
 // Update preys and predators arrays every .5 seconds
 setInterval(() => {
   predators = livingThings.filter((fish) => fish.role === "predator");
   predators = predators.length;
   preys = livingThings.filter((fish) => fish.role === "prey");
   preys = preys.length;
-  legitLivings = livingThings.filter((fish) => fish.size !== "tiny");
+  sharks = livingThings.filter((fish) => fish.svg == "shark.svg");
+  species.push(sharks);
+  piranhas = livingThings.filter((fish) => fish.svg == "piranha.svg");
+  species.push(piranhas);
+  anglerfish = livingThings.filter((fish) => fish.svg == "angler.svg");
+  species.push(anglerfish);
+  clownfish = livingThings.filter((fish) => fish.svg == "clown.svg");
+  species.push(clownfish);
+  dolphins = livingThings.filter((fish) => fish.svg == "dolphin.svg");
+  species.push(dolphins);
+  ballons = livingThings.filter((fish) => fish.svg == "ballon.svg");
+  species.push(ballons);
+  goldenfish = livingThings.filter((fish) => fish.svg == "goldenfish.svg");
+  species.push(goldenfish);
+  seahorses = livingThings.filter((fish) => fish.svg == "seahorse.svg");
+  species.push(seahorses);
+  octopus = livingThings.filter((fish) => fish.svg == "octopus.svg");
+  species.push(octopus);
+  turtles = livingThings.filter((fish) => fish.svg == "turtle.svg");
+  species.push(turtles);
+
+  // Get the dominant animal
+
+  species.forEach((specie) => {
+    if (specie == 0) {
+      species.splice(species.indexOf(specie), 1);
+    }
+  });
+
+  let lengths = species.map((s) => s.length);
+  let allEqual = lengths.every((val, i, arr) => val === arr[0]);
+  let dominantSpecies = allEqual
+    ? "none"
+    : species.reduce((a, b) => {
+        return a.length > b.length ? a : b;
+      }, []);
+
+  if (dominantSpecies[0].species != undefined) {
+    dominant = dominantSpecies[0].species;
+  } else {
+    dominant = "None";
+  }
+
+  document.getElementById("living-count").innerText =
+    "Prey Count: " +
+    preys +
+    " " +
+    "Predator Count: " +
+    predators +
+    " Dominant Species: " +
+    dominant;
+  document.getElementById("dead-count").innerText =
+    "Total Deaths: " + deathCount;
 }, 500);
 
 // Update the position and direction of each fish every frame
 requestAnimationFrame(function update() {
-  document.getElementById("living-count").innerText =
-    "Prey Count: " + preys + " " + "Predator Count: " + predators;
-  document.getElementById("dead-count").innerText =
-    "Total Deaths: " + deathCount;
   livingThings.forEach((fish) => {
     fish.live();
   });
