@@ -25,7 +25,12 @@ function updateTimer() {
   // Display the time in the format hh:mm:ss
   let timer = document.getElementById("timer");
   timer.innerHTML =
-    formattedHours + ":" + formattedMinutes + ":" + formattedSeconds;
+    "Simulation Time: " +
+    formattedHours +
+    ":" +
+    formattedMinutes +
+    ":" +
+    formattedSeconds;
 }
 
 // Update the timer every second
