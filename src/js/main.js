@@ -1109,11 +1109,6 @@ setInterval(() => {
       maxCount = speciesCount[species];
     }
   }
-
-  console.log(
-    `The most common fish species is ${dominant} with a count of ${maxCount}`
-  );
-
   document.getElementById("living-count").innerText =
     "Preys: " +
     preys +
