@@ -102,8 +102,8 @@ class Fish {
     this.isExhausted = false;
     this.isAlive = true;
     this.agingFactor = 5500;
-    this.hungerFactor = 2250;
-    this.eyeSigth = 300;
+    this.hungerFactor = 4250;
+    this.eyeSigth = 350;
     this.stamina = 200 + Math.floor(Math.random() * 11) + 10;
     this.maxStamina = this.stamina;
     this.canBreed = false;
