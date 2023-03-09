@@ -4,11 +4,30 @@ const aquariumWidth = window.innerWidth;
 const aquariumHeight = window.innerHeight;
 
 const infoBox = document.getElementById("info-box");
+const settingsBox = document.getElementById("settings");
+const settingsOpen = document.getElementById("settingsBtn");
+const settingsClose = document.getElementById("settingsClose");
 const hideInfo = document.getElementById("hide");
 const roleContainerHider = document.getElementById("roleContainerHider");
+const breedingDisabler = document.getElementById("breedingDisabler");
+const agingDisabler = document.getElementById("agingDisabler");
+const hungerDisabler = document.getElementById("hungerDisabler");
+
+settingsOpen.addEventListener("click", () => {
+  settingsBox.style.display = "block";
+});
+settingsClose.addEventListener("click", () => {
+  settingsBox.style.display = "none";
+});
 
 let updateInfo;
 let isHidden = false;
+
+// World rules
+
+let breeding = true;
+let aging = true;
+let energyConsumption = true;
 
 // Define the school of fish
 const livingThings = [];
@@ -167,8 +186,10 @@ class Fish {
 
     // Age fish
     this.agingInterval = setInterval(() => {
-      this.lifeTime++;
-      this.ageFish();
+      if (aging) {
+        this.lifeTime++;
+        this.ageFish();
+      }
     }, this.agingFactor);
 
     // Define the fish's hunger values
@@ -180,10 +201,12 @@ class Fish {
     // Increase hunger every 5 seconds if not a autotroph
     if (this.power > 0) {
       this.hungerInterval = setInterval(() => {
-        this.hunger++;
         this.setMood();
-        if (this.hunger > this.deathVal) {
-          this.die(this);
+        if (energyConsumption) {
+          this.hunger++;
+          if (this.hunger > this.deathVal) {
+            this.die(this);
+          }
         }
       }, this.hungerFactor);
       this.intervals.push(this.hungerInterval);
@@ -468,6 +491,7 @@ class Fish {
 
     // If canBreed is true, look for a mate and chase it
     if (
+      breeding &&
       this.canBreed &&
       this.size != "tiny" &&
       closestFish.canBreed &&
@@ -487,17 +511,15 @@ class Fish {
           Math.pow(this.x - closestFish.x, 2) +
             Math.pow(this.y - closestFish.y, 2)
         );
-        if (distance4 < this.eyeSigth + 100) {
+        if (distance4 < this.eyeSigth + 50) {
           this.angle = Math.atan2(
             closestFish.y - this.y,
             closestFish.x - this.x
           );
           this.angle = (this.angle * 180) / Math.PI;
 
-          if (distance4 < 40) {
-            if (this.canBreed && closestFish.canBreed) {
-              this.breed(closestFish);
-            }
+          if (distance4 < 50) {
+            this.breed(closestFish);
           }
         } else {
           if (!this.isExhausted) {
@@ -555,7 +577,6 @@ class Fish {
 
   breed(fish) {
     this.setSpeed(0, true);
-    this.setState("Breeding");
     this.breedLock = true;
     setTimeout(() => {
       this.setState("Wandering");
@@ -569,6 +590,7 @@ class Fish {
         this.canBreed = false;
       }
     }, 3000);
+    this.setState("Breeding");
   }
 
   // Get closest fish
@@ -1007,7 +1029,30 @@ roleContainerHider.addEventListener("change", () => {
     hideContainers(false);
   }
 });
-
+breedingDisabler.addEventListener("change", () => {
+  if (breedingDisabler.checked) {
+    breeding = false;
+    livingThings.forEach((fish) => {
+      fish.setState("Wandering");
+    });
+  } else {
+    breeding = true;
+  }
+});
+agingDisabler.addEventListener("change", () => {
+  if (agingDisabler.checked) {
+    aging = false;
+  } else {
+    aging = true;
+  }
+});
+hungerDisabler.addEventListener("change", () => {
+  if (hungerDisabler.checked) {
+    energyConsumption = false;
+  } else {
+    energyConsumption = true;
+  }
+});
 // Randomly spawn shrimp every 10 seconds with a random speed and gender
 const shrimpSpeed = Math.floor(Math.random() * 6) + 5;
 if (shrimpSpeed < 5) {
@@ -1040,9 +1085,9 @@ let shrimp;
 let octopus;
 let turtles;
 
-let dominant = "";
-
-let species = [];
+let dominant = null;
+let maxCount = 0;
+let counts;
 
 // Update preys and predators arrays every .5 seconds
 setInterval(() => {
@@ -1050,59 +1095,37 @@ setInterval(() => {
   predators = predators.length;
   preys = livingThings.filter((fish) => fish.role === "prey");
   preys = preys.length;
-  sharks = livingThings.filter((fish) => fish.svg == "shark.svg");
-  species.push(sharks);
-  piranhas = livingThings.filter((fish) => fish.svg == "piranha.svg");
-  species.push(piranhas);
-  anglerfish = livingThings.filter((fish) => fish.svg == "angler.svg");
-  species.push(anglerfish);
-  clownfish = livingThings.filter((fish) => fish.svg == "clown.svg");
-  species.push(clownfish);
-  dolphins = livingThings.filter((fish) => fish.svg == "dolphin.svg");
-  species.push(dolphins);
-  ballons = livingThings.filter((fish) => fish.svg == "ballon.svg");
-  species.push(ballons);
-  goldenfish = livingThings.filter((fish) => fish.svg == "goldenfish.svg");
-  species.push(goldenfish);
-  seahorses = livingThings.filter((fish) => fish.svg == "seahorse.svg");
-  species.push(seahorses);
-  octopus = livingThings.filter((fish) => fish.svg == "octopus.svg");
-  species.push(octopus);
-  turtles = livingThings.filter((fish) => fish.svg == "turtle.svg");
-  species.push(turtles);
 
-  // Get the dominant animal
+  // count the number of occurrences of each species
+  const speciesCount = livingThings.reduce((acc, fish) => {
+    acc[fish.species] = (acc[fish.species] || 0) + 1;
+    return acc;
+  }, {});
 
-  species.forEach((specie) => {
-    if (specie == 0) {
-      species.splice(species.indexOf(specie), 1);
+  // find the most populated species
+  for (const species in speciesCount) {
+    if (speciesCount[species] > maxCount) {
+      dominant = species;
+      maxCount = speciesCount[species];
     }
-  });
-
-  let lengths = species.map((s) => s.length);
-  let allEqual = lengths.every((val, i, arr) => val === arr[0]);
-  let dominantSpecies = allEqual
-    ? "none"
-    : species.reduce((a, b) => {
-        return a.length > b.length ? a : b;
-      }, []);
-
-  if (dominantSpecies[0].species != undefined) {
-    dominant = dominantSpecies[0].species;
-  } else {
-    dominant = "None";
   }
 
+  console.log(
+    `The most common fish species is ${dominant} with a count of ${maxCount}`
+  );
+
   document.getElementById("living-count").innerText =
-    "Prey Count: " +
+    "Preys: " +
     preys +
     " " +
-    "Predator Count: " +
+    "Predators: " +
     predators +
-    " Dominant Species: " +
-    dominant;
-  document.getElementById("dead-count").innerText =
-    "Total Deaths: " + deathCount;
+    " Dominant: " +
+    dominant +
+    " " +
+    "Peak: " +
+    maxCount;
+  document.getElementById("dead-count").innerText = "Deaths: " + deathCount;
 }, 500);
 
 // Update the position and direction of each fish every frame

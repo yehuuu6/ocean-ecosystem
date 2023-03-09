@@ -12,9 +12,6 @@
   <body>
     <div class="tab header">
       <div class="tab-item">
-        <h2>Ocean Ecosystem</h2>
-      </div>
-      <div class="tab-item">
         <h2 id="living-count">Population Count: null</h2>
       </div>
       <div class="tab-item">
@@ -24,18 +21,43 @@
         <h2 id="timer">Simulation Time: null</h2>
       </div>
       <div class="tab-item">
-        <input
-          type="checkbox"
-          name="roleContainerHider"
-          id="roleContainerHider"
-        />
-        <label for="roleContainerHider">Hide Role Containers</label>
+        <h2 id="settingsBtn" class="btn">Settings</h2>
       </div>
       <div class="tab-item">
         <h3 id="author">
           Author:
           <a target="_blank" href="https://github.com/sscorpi">sscorpi</a>
         </h3>
+      </div>
+    </div>
+    <div class="settings" id="settings">
+      <h2>Settings</h2>
+      <button id="settingsClose">Close</button>
+      <div class="sections">
+        <div class="section">
+          <input
+            type="checkbox"
+            name="roleContainerHider"
+            id="roleContainerHider"
+          />
+          <label for="roleContainerHider">Hide Role Containers</label>
+        </div>
+        <div class="section">
+          <input type="checkbox" name="agingDisabler" id="agingDisabler" />
+          <label for="agingDisabler">Disable Aging</label>
+        </div>
+        <div class="section">
+          <input type="checkbox" name="hungerDisabler" id="hungerDisabler" />
+          <label for="hungerDisabler">Disable Hunger</label>
+        </div>
+        <div class="section">
+          <input
+            type="checkbox"
+            name="breedingDisabler"
+            id="breedingDisabler"
+          />
+          <label for="breedingDisabler">Disable Breeding</label>
+        </div>
       </div>
     </div>
     <div id="info-box" class="info-box">

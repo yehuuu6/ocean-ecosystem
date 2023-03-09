@@ -10,6 +10,7 @@ body{
     background-size: cover;
     font-family: 'Golos Text', sans-serif;
     overflow: hidden;
+    position: relative;
 }
 img{
     -webkit-user-drag: none;
@@ -42,6 +43,62 @@ img{
     z-index: 200;
     width: 100%;
 }
+.settings{
+    position: absolute;
+    top: 50%;
+    z-index: 500;
+    display: none;
+    text-align: center;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 15px 20px;
+    width: 400px;
+    background-color: #0000009a;
+    color: aliceblue;
+}
+.btn{
+    cursor: pointer;
+}
+.btn:hover{
+    color: aqua;
+}
+.settings button{
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding:5px;
+    font-weight: 700;
+    background-color: transparent;
+    color: aliceblue;
+    border-radius: 5px;
+    border: 2px solid aliceblue;
+    cursor: pointer;
+    outline: none;
+}
+.section{
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top:20px;
+}
+input[type="checkbox"] {
+    display: none;
+}
+  
+label {
+display: inline-block;
+cursor: pointer;
+padding: 0.5em;
+width: 200px;
+border: 2px solid aliceblue;
+border-radius: 5px;
+}
+
+/* Style the checked state of the label */
+input[type="checkbox"]:checked + label {
+background-color: aliceblue;
+color: black;
+}
 .header{
     position: absolute;
     top: 0;
@@ -54,8 +111,6 @@ img{
     position: absolute;
     top:-50px;
     left: -12px;
-    width: auto;
-    height: auto;
     border-radius: 5px;
     display: flex;
     gap: 5px;
@@ -72,7 +127,7 @@ img{
     align-items: center;
     gap: 5px;
 }
-.tab-item a,h3,input,label{
+.tab-item a,h3{
     font-size: 1rem;
     font-family: 'Golos Text', sans-serif;
     letter-spacing: 1px;
@@ -118,19 +173,15 @@ img{
 }
 #hide{
     position: absolute;
-    top: 0;
-    right: 0;
-    width: auto;
-    padding: 5px;
-    height: 30px;
+    top: 5px;
+    right: 5px;
+    padding:2px;
     font-size: 10px;
-    background: #000000b5;
+    font-weight: 500;
+    background-color: transparent;
     color: aliceblue;
-    font-weight: 600;
-    display: flex;
-    justify-content: center;
-    outline: none;
-    border: none;
-    align-items: center;
+    border-radius: 5px;
+    border: 2px solid aliceblue;
     cursor: pointer;
+    outline: none;
 }
