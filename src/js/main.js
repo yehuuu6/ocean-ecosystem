@@ -22,6 +22,7 @@ settingsClose.addEventListener("click", () => {
 
 let updateInfo;
 let isHidden = false;
+let isFinished = false;
 
 // World rules
 
@@ -34,7 +35,6 @@ const livingThings = [];
 
 const goodGenePool = [
   "healthy",
-  "normal",
   "slow metabolism",
   "slow aging",
   "good vision",
@@ -42,14 +42,13 @@ const goodGenePool = [
 ];
 const badGenePool = [
   "sick",
-  "albino",
   "fast metabolism",
   "fast aging",
   "bad vision",
   "bulky",
 ];
 
-let shrimpSpawnRate = 5000;
+let shrimpSpawnRate = 2500;
 // Define the Fish class
 class Fish {
   constructor(
@@ -74,6 +73,7 @@ class Fish {
     this.badGenePool = badGenes;
     this.species = this.svg.split(".")[0];
     this.generation = generation;
+    this.isSick = false;
 
     // Select random genes from the gene pool
 
@@ -101,9 +101,9 @@ class Fish {
     this.breedLock = false;
     this.isExhausted = false;
     this.isAlive = true;
-    this.agingFactor = 5500;
-    this.hungerFactor = 4250;
-    this.eyeSigth = 350;
+    this.agingFactor = 4500;
+    this.hungerFactor = 4000;
+    this.eyeSigth = Math.floor(Math.random() * 51) + 300;
     this.stamina = 200 + Math.floor(Math.random() * 11) + 10;
     this.maxStamina = this.stamina;
     this.canBreed = false;
@@ -119,8 +119,7 @@ class Fish {
 
     // Set fish properties based on selectedGenes
     this.selectedGenes.forEach((gene) => {
-      let randomEyeSigthVal = Math.floor(Math.random() * 51) + 50;
-      let randomStaminaVal = Math.floor(Math.random() * 11) + 10;
+      let randomStaminaVal = Math.floor(Math.random() * 31) + 70;
       switch (gene) {
         case "healthy":
           this.speed = speed;
@@ -128,30 +127,28 @@ class Fish {
           this.baseSpeed = this.speed;
           break;
         case "sick":
-          this.speed = this.speed - 5;
+          this.speed = this.speed - Math.floor(Math.random() * 6);
           this.mood = "sick";
+          this.isSick = true;
           this.baseSpeed = this.speed;
           break;
-        case "albino":
-          this.img.style.filter = "brightness(0.35) invert(1)";
-          break;
         case "fast metabolism":
-          this.hungerFactor = this.hungerFactor - 750;
+          this.hungerFactor = this.hungerFactor - 3500;
           break;
         case "slow aging":
-          this.agingFactor = this.agingFactor + 750;
+          this.agingFactor = this.agingFactor + 2000;
           break;
         case "slow metabolism":
-          this.hungerFactor = this.hungerFactor + 750;
+          this.hungerFactor = this.hungerFactor + 2500;
           break;
         case "fast aging":
-          this.agingFactor = this.agingFactor - 750;
+          this.agingFactor = this.agingFactor - 4000;
           break;
         case "bad vision":
-          this.eyeSigth = this.eyeSigth - randomEyeSigthVal;
+          this.eyeSigth = this.eyeSigth - 250;
           break;
         case "good vision":
-          this.eyeSigth = this.eyeSigth + randomEyeSigthVal;
+          this.eyeSigth = this.eyeSigth + 250;
           break;
         case "bulky":
           this.stamina = this.stamina - randomStaminaVal;
@@ -163,7 +160,7 @@ class Fish {
           break;
       }
     });
-    this.lifeSpan = Math.floor(Math.random() * 11) + 50;
+    this.lifeSpan = Math.floor(Math.random() * 11) + 40;
 
     // Create the HTML element for the fish role
     this.roleElement = document.createElement("span");
@@ -176,11 +173,11 @@ class Fish {
         break;
       case "adult":
         this.setPower(false);
-        this.lifeTime = 20;
+        this.lifeTime = 13;
         break;
       case "elder":
         this.setPower(false);
-        this.lifeTime = 50;
+        this.lifeTime = 40;
         break;
     }
 
@@ -324,7 +321,7 @@ class Fish {
       this.age = "elder";
       this.fishGender.innerText = this.gender + " " + this.age;
       this.img.className = this.size;
-    } else if (this.lifeTime >= 20) {
+    } else if (this.lifeTime >= 13) {
       this.age = "adult";
       this.fishGender.innerText = this.gender + " " + this.age;
       this.img.className = this.size;
@@ -634,9 +631,12 @@ class Fish {
         this.resetSpeed();
 
         // Create 10 or less babies
-        let babyCount = Math.floor(Math.random() * 15);
+        let babyCount = Math.floor(Math.random() * 20);
+        if (this.isSick) {
+          babyCount = babyCount - (Math.floor(Math.random() * 6) + 5);
+        }
         if (babyCount <= 0) {
-          babyCount = 2;
+          babyCount = babyCount + (Math.floor(Math.random() * 6) + 5);
         }
 
         // Get current alive count of this kind
@@ -648,7 +648,7 @@ class Fish {
         });
 
         if (currentCount + babyCount > 100) {
-          babyCount = 1;
+          babyCount = 5;
         }
 
         for (let i = 0; i < babyCount; i++) {
@@ -1088,7 +1088,9 @@ let turtles;
 let dominant = null;
 let maxCount = 0;
 let counts;
-
+let _speciesCount;
+let uniqueSpecies;
+let lastStanding;
 // Update preys and predators arrays every .5 seconds
 setInterval(() => {
   predators = livingThings.filter((fish) => fish.role === "predator");
@@ -1109,6 +1111,28 @@ setInterval(() => {
       maxCount = speciesCount[species];
     }
   }
+  uniqueSpecies = new Set(livingThings.map((fish) => fish.species));
+
+  // Get the count of unique species
+  _speciesCount = new Set(
+    [...uniqueSpecies].filter((species) => species !== "shrimp")
+  );
+
+  // If species count is 1, then finish the game
+  if (_speciesCount.size === 1) {
+    if (!isFinished) {
+      isFinished = true;
+      lastStanding = [..._speciesCount][0];
+      if (
+        confirm(
+          `Simulation is over! All species except for ${lastStanding} have gone extinct! Do you want to start a new simulation?`
+        )
+      ) {
+        window.location.reload();
+      }
+    }
+  }
+
   document.getElementById("living-count").innerText =
     "Preys: " +
     preys +
