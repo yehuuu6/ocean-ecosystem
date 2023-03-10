@@ -12,6 +12,7 @@ const roleContainerHider = document.getElementById("roleContainerHider");
 const breedingDisabler = document.getElementById("breedingDisabler");
 const agingDisabler = document.getElementById("agingDisabler");
 const hungerDisabler = document.getElementById("hungerDisabler");
+const escapingDisabler = document.getElementById("disableEscaping");
 
 settingsOpen.addEventListener("click", () => {
   settingsBox.style.display = "block";
@@ -29,6 +30,7 @@ let isFinished = false;
 let breeding = true;
 let aging = true;
 let energyConsumption = true;
+let escaping = true;
 
 // Define the school of fish
 const livingThings = [];
@@ -443,6 +445,7 @@ class Fish {
     // If prey is close to a predator, start running away
 
     if (
+      escaping &&
       closestFish &&
       this.power < closestFish.power &&
       this.svg != closestFish.svg
@@ -1053,6 +1056,13 @@ hungerDisabler.addEventListener("change", () => {
     energyConsumption = true;
   }
 });
+escapingDisabler.addEventListener("change", () => {
+  if (escapingDisabler.checked) {
+    escaping = false;
+  } else {
+    escaping = true;
+  }
+});
 // Randomly spawn shrimp every 10 seconds with a random speed and gender
 const shrimpSpeed = Math.floor(Math.random() * 6) + 5;
 if (shrimpSpeed < 5) {
@@ -1106,7 +1116,7 @@ setInterval(() => {
 
   // find the most populated species
   for (const species in speciesCount) {
-    if (speciesCount[species] > maxCount) {
+    if (species != "shrimp" && speciesCount[species] > maxCount) {
       dominant = species;
       maxCount = speciesCount[species];
     }
