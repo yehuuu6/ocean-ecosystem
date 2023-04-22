@@ -51,18 +51,21 @@ img{
     text-align: center;
     left: 50%;
     transform: translate(-50%, -50%);
-    padding: 15px 20px;
-    width: 400px;
+    backdrop-filter: blur(5px);
+    padding: 15px 45px;
+    width: auto;
+    gap: 20px;
+    align-items: flex-start;
     background-color: #0000009a;
     color: aliceblue;
 }
-.btn{
+.fake-btn{
     cursor: pointer;
 }
-.btn:hover{
+.fake-btn:hover{
     color: aqua;
 }
-.settings button{
+#settingsClose{
     position: absolute;
     top: 5px;
     right: 5px;
@@ -75,6 +78,26 @@ img{
     cursor: pointer;
     outline: none;
 }
+.snap-effect img{
+    transform-origin: left;
+    transition-delay: 1s;
+    animation: snap 4s alternate;
+}
+@keyframes snap{
+    0%{
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100%{
+        transform: translateX(50px);
+        opacity: 0;
+        filter: blur(10px);
+    }
+}
+#settingsClose:hover{
+    color: aqua;
+    border: 2px solid aqua;
+}
 .sections{
     display: flex;
     justify-content: center;
@@ -83,24 +106,78 @@ img{
     flex-direction: column;
     width: 100%;
 }
+
+.negative:hover{
+    color: #ff1e1e;
+    border: 2px solid #ff1e1e;
+}
+.default:hover{
+    color: aqua;
+    border: 2px solid aqua;
+}
+.positive:hover{
+    color: #00ff00;
+    border: 2px solid #00ff00;
+}
+.aquarium{
+    backdrop-filter: blur(2px);
+    height: 100dvh;
+    width: 100dvw;
+    overflow: hidden;
+
+}
 .section{
     display: flex;
     justify-content: center;
     width: 100%;
 }
+.section select{
+    padding: 0.5em;
+    width: 230px;
+    border-radius: 5px;
+    border: 2px solid aliceblue;
+    background-color: transparent;
+    color: aliceblue;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    outline: none;
+}
+.section select:hover{
+    color: aqua;
+    border: 2px solid aqua;
+}
+.section option{
+    background-color: #0000009a;
+    color: aliceblue;
+}
 input[type="checkbox"] {
     display: none;
 }
-  
 label {
 display: inline-block;
 cursor: pointer;
 padding: 0.5em;
-width: 200px;
+width: 230px;
 border: 2px solid aliceblue;
 border-radius: 5px;
 }
-
+label:hover{
+    color: aqua;
+    border: 2px solid aqua;
+}
+.btn{
+    padding: 0.5em;
+    width: 230px;
+    border-radius: 5px;
+    border: 2px solid aliceblue;
+    background-color: transparent;
+    color: aliceblue;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    outline: none;
+}
 /* Style the checked state of the label */
 input[type="checkbox"]:checked + label {
 background-color: aliceblue;
@@ -111,9 +188,7 @@ color: black;
     top: 0;
     left: 0;
 }
-.aquarium{
-    height: 100vh;
-}
+
 .role-container{
     position: absolute;
     top:-50px;
@@ -172,6 +247,11 @@ color: black;
     font-family: 'Golos Text', sans-serif;
     letter-spacing: 1px;
 }
+.sections h2{
+    height: 40px;
+    display: grid;
+    place-items: center;
+}
 .info-box h2{
     font-size: 1rem;
     font-family: 'Golos Text', sans-serif;
@@ -191,4 +271,23 @@ color: black;
     border: 2px solid aliceblue;
     cursor: pointer;
     outline: none;
+}
+
+/* Media query for 1366x768 screens */
+@media screen and (max-width: 1366px) {
+    .tab-item h2{
+        font-size: 0.8rem;
+    }
+    .role-item{
+        font-size: 8px;
+    }
+    label{
+        font-size: 0.8rem;
+    }
+    .btn{
+        font-size: 0.8rem;
+    }
+    .settings h2{
+        font-size: 1rem;
+    }
 }
