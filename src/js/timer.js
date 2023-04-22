@@ -17,20 +17,22 @@ function updateTimer() {
     }
   }
 
-  // Add leading zeros if necessary
-  let formattedHours = ("0" + hours).slice(-2);
-  let formattedMinutes = ("0" + minutes).slice(-2);
-  let formattedSeconds = ("0" + seconds).slice(-2);
+  // Format the time
+  let time = "";
+  if (hours > 0) {
+    time += ("0" + hours).slice(-2) + ":";
+  }
+  if (minutes > 0 || hours > 0) {
+    time += ("0" + minutes).slice(-2) + ":";
+  }
+  time += ("0" + seconds).slice(-2);
 
-  // Display the time in the format hh:mm:ss
-  let timer = document.getElementById("timer");
-  timer.innerHTML =
-    "Simulation Time: " +
-    formattedHours +
-    ":" +
-    formattedMinutes +
-    ":" +
-    formattedSeconds;
+  // Remove leading zeros and colons for values that are 0
+  time = time.replace(/^00:/, "").replace(/^0/, "");
+
+  // Display the time
+  let timerElement = document.getElementById("timer");
+  timerElement.textContent = "Simulation Time: " + time;
 }
 
 // Update the timer every second
@@ -43,4 +45,12 @@ document.addEventListener("visibilitychange", function () {
   } else {
     timerInterval = setInterval(updateTimer, 1000);
   }
+});
+
+// Reset the timer on click of the button with id "reset-timer"
+document.getElementById("reset-timer").addEventListener("click", function () {
+  hours = 0;
+  minutes = 0;
+  seconds = 0;
+  updateTimer();
 });
