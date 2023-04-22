@@ -12,16 +12,16 @@
   <body>
     <div class="tab header">
       <div class="tab-item">
-        <h2 id="living-count">Population Count: null</h2>
+        <h2 id="living-count">Population Count: loading</h2>
       </div>
       <div class="tab-item">
-        <h2 id="dead-count">Total Deaths: null</h2>
+        <h2 id="dead-count">Deaths: loading</h2>
       </div>
       <div class="tab-item">
-        <h2 id="timer">Simulation Time: null</h2>
+        <h2 id="timer">Simulation Time: loading</h2>
       </div>
       <div class="tab-item">
-        <h2 id="settingsBtn" class="btn">Settings</h2>
+        <h2 id="settingsBtn" class="fake-btn">Settings</h2>
       </div>
       <div class="tab-item">
         <h3 id="author">
@@ -38,19 +38,18 @@
     <div class="settings" id="settings">
       <button id="settingsClose">Close</button>
       <div class="sections">
-        <h2>UI Settings</h2>
-        <div class="section">
-          <input
-            type="checkbox"
-            name="roleContainerHider"
-            id="roleContainerHider"
-          />
-          <label for="roleContainerHider">Hide Role Containers</label>
-        </div>
         <h2>World Rules</h2>
         <div class="section">
           <input type="checkbox" name="agingDisabler" id="agingDisabler" />
           <label for="agingDisabler">Disable Aging</label>
+        </div>
+        <div class="section">
+          <input type="checkbox" name="shrimpSpawn" id="shrimpSpawn" />
+          <label for="shrimpSpawn">Disable Shrimp Spawn</label>
+        </div>
+        <div class="section">
+          <input type="checkbox" name="oldAgeDisabler" id="oldAgeDisabler" />
+          <label for="oldAgeDisabler">Disable Death by Old Age</label>
         </div>
         <div class="section">
           <input type="checkbox" name="hungerDisabler" id="hungerDisabler" />
@@ -67,6 +66,55 @@
         <div class="section">
           <input type="checkbox" name="disableEscaping" id="disableEscaping" />
           <label for="disableEscaping">Disable Horror</label>
+        </div>
+      </div>
+      <div class="sections">
+        <h2>General</h2>
+        <div class="section">
+          <input
+            type="checkbox"
+            name="roleContainerHider"
+            id="roleContainerHider"
+          />
+          <label for="roleContainerHider">Hide Role Containers</label>
+        </div>
+        <div class="section">
+          <button id="reset-timer" class="btn default">Reset Timer</button>
+        </div>
+        <h2>Actions</h2>
+        <div class="section">
+          <select id="gender">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div class="section">
+          <select id="kind">
+            <option value="shark">Shark</option>
+            <option value="piranha">Piranha</option>
+            <option value="angler">Angler Fish</option>
+            <option value="dolphin">Dolphin</option>
+            <option value="octopus">Octopus</option>
+            <option value="goldenfish">Golden Fish</option>
+            <option value="seahorse">Seahorse</option>
+            <option value="clown">Clown Fish</option>
+            <option value="ballon">Balloon Fish</option>
+            <option value="turtle">Sea Turtle</option>
+          </select>
+        </div>
+        <div class="section">
+          <button id="create-animal" class="btn positive">
+            Create Creature
+          </button>
+        </div>
+        <div class="section">
+          <button
+            class="btn negative"
+            title="Eliminate half of living things"
+            id="thanos-snap-btn"
+          >
+            Thanos Snap
+          </button>
         </div>
       </div>
     </div>
