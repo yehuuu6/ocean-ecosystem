@@ -1,6 +1,6 @@
 # Ocean Ecosystem
 
-I am trying to create an eco system on web. Mostly inspired by Sebastian Lague's Unity version and other real life variants.
+I am trying to create an ecosystem on web. Mostly inspired by Sebastian Lague's Unity version and other real life variants.
 
 ![Thumbnail](assets/thumb.PNG)
 
