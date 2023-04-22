@@ -10,12 +10,14 @@ const settingsClose = document.getElementById("settingsClose");
 const hideInfo = document.getElementById("hide");
 const roleContainerHider = document.getElementById("roleContainerHider");
 const breedingDisabler = document.getElementById("breedingDisabler");
+const shrimpSpawnController = document.getElementById("shrimpSpawn");
 const agingDisabler = document.getElementById("agingDisabler");
+const oldAgeDisabler = document.getElementById("oldAgeDisabler");
 const hungerDisabler = document.getElementById("hungerDisabler");
 const escapingDisabler = document.getElementById("disableEscaping");
 
 settingsOpen.addEventListener("click", () => {
-  settingsBox.style.display = "block";
+  settingsBox.style.display = "flex";
 });
 settingsClose.addEventListener("click", () => {
   settingsBox.style.display = "none";
@@ -29,8 +31,10 @@ let isFinished = false;
 
 let breeding = true;
 let aging = true;
+let deathByOldAge = true;
 let energyConsumption = true;
 let escaping = true;
+let shrimpSpawner = true;
 
 // Define the school of fish
 const livingThings = [];
@@ -204,7 +208,7 @@ class Fish {
         if (energyConsumption) {
           this.hunger++;
           if (this.hunger > this.deathVal) {
-            this.die(this);
+            this.die(this, "natural");
           }
         }
       }, this.hungerFactor);
@@ -287,7 +291,7 @@ class Fish {
       this.roleContainer.style.display = "none";
     }
 
-    aquarium.appendChild(this.roleContainer);
+    if (this.species != "shrimp") aquarium.appendChild(this.roleContainer);
     // Display fish gender on fish but do not rotate it with the fish
 
     this.fishGender.innerText = this.gender + " " + this.age;
@@ -315,10 +319,8 @@ class Fish {
 
   // Aging function
   ageFish() {
-    if (this.lifeTime >= this.lifeSpan) {
-      if (this.isAlive) {
-        this.die(this);
-      }
+    if (this.lifeTime >= this.lifeSpan && this.isAlive && deathByOldAge) {
+      this.die(this, "natural");
     } else if (this.lifeTime >= 40) {
       this.age = "elder";
       this.fishGender.innerText = this.gender + " " + this.age;
@@ -340,7 +342,8 @@ class Fish {
     this.speedLock = false;
   }
 
-  die(fish) {
+  die(fish, cause) {
+    livingThings.splice(livingThings.indexOf(fish), 1);
     let deathSize;
     if (fish.age == "baby") {
       deathSize = "baby";
@@ -358,19 +361,27 @@ class Fish {
     });
     fish.isAlive = false;
     const deadFish = document.createElement("div");
-    deadFish.className = "fish";
     const deadFishImg = document.createElement("img");
-    deadFishImg.src = "./assets/svg/env/dead.svg";
-    deadFishImg.className = deathSize + " dead";
+    if (cause == "natural") {
+      deadFish.className = "fish";
+      deadFishImg.src = "./assets/svg/env/dead.svg";
+      deadFishImg.className = deathSize + " dead";
+      setTimeout(() => {
+        deadFish.remove();
+      }, 20000);
+    } else if (cause == "thanos") {
+      deadFish.className = "fish snap-effect";
+      deadFishImg.src = `/assets/svg/animals/${fish.species}.svg`;
+      deadFishImg.className = deathSize + " dead";
+      setTimeout(() => {
+        deadFish.remove();
+      }, 4000);
+    }
     deadFish.appendChild(deadFishImg);
     deadFish.style.transform = `translate(${fish.x}px, ${fish.y}px) rotate(${fish.angle}deg)`;
     aquarium.appendChild(deadFish);
     fish.element.remove();
     fish.roleContainer.remove();
-    livingThings.splice(livingThings.indexOf(fish), 1);
-    setTimeout(() => {
-      deadFish.remove();
-    }, 20000);
     fish.setSpeed(0, true);
   }
   setPower(override) {
@@ -418,8 +429,8 @@ class Fish {
     if (this.mood == "hungry" || this.mood == "starving") {
       if (
         closestFish &&
-        this.power > closestFish.power &&
-        this.svg != closestFish.svg
+        this.power > closestFish?.power &&
+        this.svg != closestFish?.svg
       ) {
         const distance1 = Math.sqrt(
           Math.pow(this.x - closestFish.x, 2) +
@@ -447,8 +458,8 @@ class Fish {
     if (
       escaping &&
       closestFish &&
-      this.power < closestFish.power &&
-      this.svg != closestFish.svg
+      this.power < closestFish?.power &&
+      this.svg != closestFish?.svg
     ) {
       const distance2 = Math.sqrt(
         Math.pow(this.x - closestFish.x, 2) +
@@ -484,7 +495,7 @@ class Fish {
           this.setMood();
           this.setState("Wandering");
           this.resetSpeed();
-          this.die(closestFish);
+          this.die(closestFish, "natural");
         }
       }
     }
@@ -494,7 +505,7 @@ class Fish {
       breeding &&
       this.canBreed &&
       this.size != "tiny" &&
-      closestFish.canBreed &&
+      closestFish?.canBreed &&
       !this.breedLock &&
       this.mood != "starving" &&
       this.mood != "hungry"
@@ -511,14 +522,20 @@ class Fish {
           Math.pow(this.x - closestFish.x, 2) +
             Math.pow(this.y - closestFish.y, 2)
         );
-        if (distance4 < this.eyeSigth + 50) {
+        if (Math.round(distance4) < Math.round(this.eyeSigth + 1250)) {
           this.angle = Math.atan2(
             closestFish.y - this.y,
             closestFish.x - this.x
           );
           this.angle = (this.angle * 180) / Math.PI;
 
-          if (distance4 < 50) {
+          if (
+            distance4 < 50 &&
+            closestFish.canBreed &&
+            !this.breedLock &&
+            (closestFish.state == "Looking for mate" ||
+              closestFish.state == "Breeding")
+          ) {
             this.breed(closestFish);
           }
         } else {
@@ -786,54 +803,55 @@ const updateFishInfo = (fish) => {
 };
 
 createAnimal(
+  "turtle.svg",
+  "prey",
+  "female",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool,
+  1
+);
+createAnimal(
+  "turtle.svg",
+  "prey",
+  "male",
+  "small",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool,
+  1
+);
+
+createAnimal(
+  "octopus.svg",
+  "predator",
+  "male",
+  "medium",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool,
+  1
+);
+createAnimal(
+  "octopus.svg",
+  "predator",
+  "female",
+  "medium",
+  Math.floor(Math.random() * 11) + 10,
+  "adult",
+  goodGenePool,
+  badGenePool,
+  1
+);
+createAnimal(
   "shark.svg",
   "predator",
   "male",
   "large",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool,
-  1
-);
-createAnimal(
-  "turtle.svg",
-  "prey",
-  "female",
-  "small",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool,
-  1
-);
-createAnimal(
-  "turtle.svg",
-  "prey",
-  "male",
-  "small",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool,
-  1
-);
-createAnimal(
-  "octopus.svg",
-  "predator",
-  "male",
-  "medium",
-  Math.floor(Math.random() * 11) + 10,
-  "adult",
-  goodGenePool,
-  badGenePool,
-  1
-);
-createAnimal(
-  "octopus.svg",
-  "predator",
-  "female",
-  "medium",
   Math.floor(Math.random() * 11) + 10,
   "adult",
   goodGenePool,
@@ -895,6 +913,7 @@ createAnimal(
   badGenePool,
   1
 );
+
 createAnimal(
   "clown.svg",
   "prey",
@@ -1042,11 +1061,25 @@ breedingDisabler.addEventListener("change", () => {
     breeding = true;
   }
 });
+shrimpSpawnController.addEventListener("change", () => {
+  if (shrimpSpawnController.checked) {
+    shrimpSpawner = false;
+  } else {
+    shrimpSpawner = true;
+  }
+});
 agingDisabler.addEventListener("change", () => {
   if (agingDisabler.checked) {
     aging = false;
   } else {
     aging = true;
+  }
+});
+oldAgeDisabler.addEventListener("change", () => {
+  if (oldAgeDisabler.checked) {
+    deathByOldAge = false;
+  } else {
+    deathByOldAge = true;
   }
 });
 hungerDisabler.addEventListener("change", () => {
@@ -1068,36 +1101,191 @@ const shrimpSpeed = Math.floor(Math.random() * 6) + 5;
 if (shrimpSpeed < 5) {
   shrimpSpeed = shrimpSpeed + (Math.floor(Math.random() * 6) + 5);
 }
+
 setInterval(() => {
-  createAnimal(
-    "shrimp.svg",
-    "prey",
-    getRandomGender(),
-    "tiny",
-    shrimpSpeed,
-    "adult",
-    goodGenePool,
-    badGenePool,
-    1
-  );
+  if (shrimpSpawner) {
+    createAnimal(
+      "shrimp.svg",
+      "prey",
+      getRandomGender(),
+      "tiny",
+      shrimpSpeed,
+      "adult",
+      goodGenePool,
+      badGenePool,
+      1
+    );
+  }
 }, shrimpSpawnRate);
+
+// Create Animal BTNs
+
+const createAnimalBtn = document.getElementById("create-animal");
+createAnimalBtn.addEventListener("click", () => {
+  const genderSelect = document.querySelector("#gender");
+  const gender = genderSelect.value;
+  const animalSelect = document.querySelector("#kind");
+  const species = animalSelect.value;
+  switch (species) {
+    case "piranha":
+      createAnimal(
+        "piranha.svg",
+        "predator",
+        gender,
+        "small",
+        Math.floor(Math.random() * 11) + 10,
+        "adult",
+        goodGenePool,
+        badGenePool,
+        1
+      );
+      break;
+    case "shark":
+      createAnimal(
+        "shark.svg",
+        "predator",
+        gender,
+        "large",
+        Math.floor(Math.random() * 11) + 10,
+        "adult",
+        goodGenePool,
+        badGenePool,
+        1
+      );
+      break;
+    case "goldenfish":
+      createAnimal(
+        "goldenfish.svg",
+        "prey",
+        gender,
+        "small",
+        Math.floor(Math.random() * 11) + 10,
+        "adult",
+        goodGenePool,
+        badGenePool,
+        1
+      );
+      break;
+    case "seahorse":
+      createAnimal(
+        "seahorse.svg",
+        "prey",
+        gender,
+        "small",
+        Math.floor(Math.random() * 11) + 10,
+        "adult",
+        goodGenePool,
+        badGenePool,
+        1
+      );
+      break;
+    case "dolphin":
+      createAnimal(
+        "dolphin.svg",
+        "prey",
+        gender,
+        "medium",
+        Math.floor(Math.random() * 11) + 10,
+        "adult",
+        goodGenePool,
+        badGenePool,
+        1
+      );
+      break;
+    case "octopus":
+      createAnimal(
+        "octopus.svg",
+        "predator",
+        gender,
+        "medium",
+        Math.floor(Math.random() * 11) + 10,
+        "adult",
+        goodGenePool,
+        badGenePool,
+        1
+      );
+      break;
+    case "angler":
+      createAnimal(
+        "angler.svg",
+        "predator",
+        gender,
+        "medium",
+        Math.floor(Math.random() * 11) + 10,
+        "adult",
+        goodGenePool,
+        badGenePool,
+        1
+      );
+      break;
+    case "clown":
+      createAnimal(
+        "clown.svg",
+        "prey",
+        gender,
+        "small",
+        Math.floor(Math.random() * 11) + 10,
+        "adult",
+        goodGenePool,
+        badGenePool,
+        1
+      );
+      break;
+    case "ballon":
+      createAnimal(
+        "ballon.svg",
+        "prey",
+        gender,
+        "small",
+        Math.floor(Math.random() * 11) + 10,
+        "adult",
+        goodGenePool,
+        badGenePool,
+        1
+      );
+      break;
+    case "turtle":
+      createAnimal(
+        "turtle.svg",
+        "prey",
+        gender,
+        "small",
+        Math.floor(Math.random() * 11) + 10,
+        "adult",
+        goodGenePool,
+        badGenePool,
+        1
+      );
+      break;
+  }
+});
+
+// Create Animal BTNs
+
 let predators;
 let preys;
-let sharks;
-let piranhas;
-let anglerfish;
-let clownfish;
-let dolphins;
-let ballons;
-let goldenfish;
-let seahorses;
-let shrimp;
-let octopus;
-let turtles;
+
+function thanosSnap() {
+  // Play audio
+  const audio = new Audio("/assets/audio/snap.mp3");
+  audio.play();
+  // Select half of the living things randomly
+  const half = Math.floor(livingThings.length / 2);
+  const halfOfLivingThings = livingThings
+    .sort(() => 0.5 - Math.random())
+    .slice(0, half);
+
+  halfOfLivingThings.forEach((fish) => {
+    fish.die(fish, "thanos");
+  });
+}
+
+document.querySelector("#thanos-snap-btn").addEventListener("click", () => {
+  thanosSnap();
+});
 
 let dominant = null;
 let maxCount = 0;
-let counts;
 let _speciesCount;
 let uniqueSpecies;
 let lastStanding;
