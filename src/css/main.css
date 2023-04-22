@@ -6,8 +6,9 @@
 }
 body{
     user-select: none;
-    background: url(/assets/imgs/bg.png) no-repeat center center;
+    background: url(/assets/imgs/bg-1.png) no-repeat center center;
     background-size: cover;
+    backdrop-filter: blur(3px);
     font-family: 'Golos Text', sans-serif;
     overflow: hidden;
     position: relative;
@@ -120,7 +121,6 @@ img{
     border: 2px solid #00ff00;
 }
 .aquarium{
-    backdrop-filter: blur(2px);
     height: 100dvh;
     width: 100dvw;
     overflow: hidden;
@@ -135,6 +135,8 @@ img{
     padding: 0.5em;
     width: 230px;
     border-radius: 5px;
+    height: 40px;
+    text-align: center;
     border: 2px solid aliceblue;
     background-color: transparent;
     color: aliceblue;
@@ -148,18 +150,25 @@ img{
     border: 2px solid aqua;
 }
 .section option{
-    background-color: #0000009a;
+    background-color: #000000cc;
     color: aliceblue;
 }
 input[type="checkbox"] {
     display: none;
 }
+.btn svg{
+    width: 20px;
+    height: 20px;
+}
 label {
 display: inline-block;
 cursor: pointer;
+height: 40px;
 padding: 0.5em;
 width: 230px;
 border: 2px solid aliceblue;
+display: grid;
+place-items: center;
 border-radius: 5px;
 }
 label:hover{
@@ -169,6 +178,11 @@ label:hover{
 .btn{
     padding: 0.5em;
     width: 230px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
     border-radius: 5px;
     border: 2px solid aliceblue;
     background-color: transparent;

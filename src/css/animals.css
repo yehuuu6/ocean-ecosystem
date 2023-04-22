@@ -1,6 +1,7 @@
 .fish {
     position: absolute;
     padding: 10px;
+    filter: drop-shadow(0 0 0.75rem #000000a8);
 }
 .death{
     z-index: 0;
